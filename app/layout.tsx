@@ -6,6 +6,7 @@ import { frFR } from "@clerk/localizations";
 import { Toaster } from "sonner";
 import { Navbar } from "./_components/_layout/navBar";
 import { Container } from "./_components/_layout/container";
+import { Footer } from "./_components/_layout/footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,6 +42,9 @@ export default function RootLayout({
               <Navbar />
             </header>
             <main>{children}</main>
+            <footer>
+              <Footer />
+            </footer>
           </Container>
         </body>
       </html>

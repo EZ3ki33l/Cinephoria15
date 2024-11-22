@@ -32,7 +32,7 @@ export const Logo = ({ size = "medium" }: Props) => {
 
   return (
     <Image
-      src="/images/Logo_cinephoria2.png"
+      src="/images/Logo_cinephoria.png"
       alt="logo"
       width={longueur}
       height={largeur}

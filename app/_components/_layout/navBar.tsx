@@ -1,12 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { SignInButton, SignUpButton, useAuth, useUser } from "@clerk/nextjs";
+import { SignIn, SignInButton, SignUpButton, useAuth, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "./logo";
 import { NavbarLinks } from "./navBarLinks";
 import { Sidebar } from "./sidebar";
+import { Typo } from "./typography";
+import { Button } from "./button";
 
 export const Navbar = () => {
   const user = useAuth();
@@ -24,18 +25,22 @@ export const Navbar = () => {
 
   if (!user.isSignedIn) {
     return (
-      <div className="flex justify-between items-center mx-0 border-b py-2 mb-5 bg-transparent backdrop-blur-md h-[8svh]">
+      <div className="flex justify-between items-center mx-0 border-b py-2 bg-transparent backdrop-blur-md h-[8svh]">
         <Link href="/">
           <Logo size="extra-small" />
         </Link>
-        <NavbarLinks />
-        <div className="space-x-2">
-          <Button variant="default">
-            <SignInButton children={"Connexion"} mode="modal" />
-          </Button>
-          <Button variant="default">
-            <SignUpButton children="S'inscrire" mode="modal" />
-          </Button>
+        <div className="flex justify-between items-center border rounded-full py-2 px-4 gap-4">
+          <div>
+            <NavbarLinks />
+          </div>
+          <div className="space-x-2">
+            <SignInButton mode="modal">
+              <Button>Connexion</Button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <Button variant="secondary">S'inscrire</Button>
+            </SignUpButton>
+          </div>
         </div>
       </div>
     );
@@ -52,9 +57,9 @@ export const Navbar = () => {
           <NavbarLinks />
         </div>
         <div className="space-x-2 flex items-center justify-center border px-3 py-2 rounded-full">
-          <p className="hidden md:block">
+          <Typo variant="body-base" component="p" className="hidden md:block">
             {salutation} {dataUser.user?.firstName} !
-          </p>
+          </Typo>
           <Sidebar />
         </div>
       </div>

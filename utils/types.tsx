@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactElement, ReactNode } from "react";
 
 export type Role = "administrateur" | "manager";
 
@@ -12,3 +12,14 @@ export type StripeItemType = {
   showtimeId: number;
   seats: { column: number; row: number; price: number }[];
 };
+
+export type LinkType = "internal" | "external";
+
+export const LinkTypes: Record<string, LinkType> = {
+  INTERNAL: "internal",
+  EXTERNAL: "external",
+};
+
+export interface IconProps {
+  size: number;
+}
