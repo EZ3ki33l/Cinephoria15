@@ -1,0 +1,264 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstName String
+  lastName  String
+  userName  String? @unique
+  email     String? @unique
+  image     String?
+  favoriteGenre Genre? 
+
+  Admin   Admin?
+  Manager Manager?
+
+  Bookings Booking[]
+  Tickets  Ticket[]
+  posts    Post[]
+  likes    Like[]
+}
+
+model Admin {
+  id String @id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [id], references: [id])
+}
+
+model Manager {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User     User    @relation(fields: [id], references: [id])
+  Cinema   Cinema? @relation(fields: [cinemaId], references: [id])
+  cinemaId Int?
+}
+
+model Cinema {
+  id          Int         @id @default(autoincrement())
+  name        String
+  Address     Address     @relation(fields: [addressId], references: [id])
+  addressId   Int
+  isOpen      Boolean?    @default(false)
+  isHandicap  Boolean     @default(false)
+  Screens     Screen[]
+  Managers    Manager[]
+  Equipment   Equipment[]
+  description Json
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  street     String
+  postalCode Int
+  city       String
+  lat        Float
+  lng        Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Cinema Cinema[]
+}
+
+model Screen {
+  id              Int             @id @default(autoincrement())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  number          Int
+  cinemaId        Int
+  Cinema          Cinema          @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  Seats           Seat[]
+  Showtimes       Showtime[]
+  projectionType  ProjectionType  @default(DOLBY_CINEMA)
+  soundSystemType SoundSystemType @default(DOLBY_ATMOS)
+
+  price Float @default(19)
+
+  @@unique([cinemaId, number])
+}
+
+model Seat {
+  id       Int    @id @default(autoincrement())
+  row      Int
+  column   Int
+  screenId Int
+  Screen   Screen @relation(fields: [screenId], references: [id], onDelete: Cascade)
+
+  Booking Booking[]
+}
+
+model Movie {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  title       String
+  director    String
+  genre       Genre
+  duration    Int // Duration in minutes
+  releaseDate DateTime?
+  summary     String
+  trailer     String
+  images      String[]
+  lovedByTeam Boolean?
+  Showtimes   Showtime[]
+  Post        Post[]
+}
+
+model News {
+  id           Int      @id @default(autoincrement())
+  title        String
+  category     String?
+  shortContent String
+  content      Json
+  images       String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Showtime {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  startTime DateTime
+  movieId   Int
+  Movie     Movie     @relation(fields: [movieId], references: [id])
+  screenId  Int
+  Screen    Screen    @relation(fields: [screenId], references: [id], onDelete: Cascade)
+  Bookings  Booking[]
+
+  status ShowtimeStatus?
+
+  @@unique([startTime, screenId])
+}
+
+model Booking {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  User       User     @relation(fields: [userId], references: [id])
+  showtimeId Int
+  Showtime   Showtime @relation(fields: [showtimeId], references: [id])
+  seatId     Int
+  Seat       Seat     @relation(fields: [seatId], references: [id])
+  pricePaid  Int
+  Ticket     Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId   Int
+
+  @@unique([seatId, showtimeId], name: "uniqueSeatShowtime")
+}
+
+model Ticket {
+  id   Int    @id @default(autoincrement())
+  uid  String
+  User User   @relation(fields: [uid], references: [id])
+
+  qrCode String?
+
+  Bookings Booking[]
+}
+
+enum ProjectionType {
+  IMAX
+  DOLBY_CINEMA
+}
+
+enum SoundSystemType {
+  DOLBY_DIGITAL
+  DOLBY_ATMOS
+  DTS
+  DTS_X
+  AURO_3D
+  IMAX_ENHANCED
+}
+
+enum Genre {
+  ACTION
+  AVENTURE
+  ANIMATION
+  COMEDIE
+  COURT_METRAGE
+  CRIME
+  DOCUMENTAIRE
+  DRAME
+  FAMILLE
+  FANTASIE
+  GUERRE
+  HISTORIQUE
+  HORREUR
+  MUSIQUE
+  MYSTERE
+  POLICIER
+  ROMANTIQUE
+  SCIENCE_FICTION
+  SPORT
+  THRILLER
+  WESTERN
+}
+
+enum ShowtimeStatus {
+  REPORTE
+  ANNULE
+}
+
+enum Equipment {
+  PARKING_GRATUIT
+  STAND_CONFISERIE
+  JEUX_ARCADE
+  WIFI_GRATUIT
+  ACCES_PMR
+  BOUTIQUE_GOODIES
+}
+
+model Post {
+  id       String  @id @default(cuid())
+  content  String
+  parentId String?
+  userId   String
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes Like[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replies Post[] @relation("comments")
+  parent  Post?  @relation("comments", fields: [parentId], references: [id], onDelete: Cascade)
+  Movie   Movie? @relation(fields: [movieId], references: [id])
+  movieId Int?
+}
+
+model Like {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
