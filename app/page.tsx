@@ -5,11 +5,13 @@ import Link from "next/link";
 import { Typo } from "./_components/_layout/typography";
 import { Maps } from "./_components/_maps/maps";
 import { Button } from "./_components/_layout/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import ResponsiveComponent from "./_components/homeBackground";
 
 export default function Home() {
   return (
     <div className="flex flex-col space-y-6">
-      <BackgroundBeamsWithCollision className="border-b max-h-[60svh]">
+      <BackgroundBeamsWithCollision className="text-center border-b w-svh max-h-[60svh]">
         <Typo
           variant="h1"
           component="h2"
@@ -37,7 +39,7 @@ export default function Home() {
         <Typo variant="h1" component="h1">
           Nos cinémas :
         </Typo>
-        <div className="grid grid-cols-2">
+        <div className="grid md:grid-cols-2">
           <div className="flex flex-col justify-center gap-y-3 pr-16 text-justify">
             <Typo variant="body-base" component="p">
               <strong className="text-lg">Cinéphoria</strong>, c'est un réseau
@@ -69,8 +71,8 @@ export default function Home() {
         </div>
       </div>
       <Separator className="my-10" />
-      <div className="grid grid-cols-6 py-5 mb-5">
-        <div className="col-span-2">
+      <div className="grid md:grid-cols-6 py-5 mb-5">
+        <div className="md:col-span-2">
           <Typo variant="h1" component="h1">
             Nous connaitre :
           </Typo>
@@ -87,7 +89,7 @@ export default function Home() {
             </Typo>
           </div>
           <Link href="/a-propos" className="flex justify-center py-5">
-            <Button 
+            <Button
               variant="primary"
               iconPosition="right"
               icon={<ArrowRight className="h-4 w-4" />}
@@ -96,7 +98,7 @@ export default function Home() {
             </Button>
           </Link>
         </div>
-        <div className="col-span-4 ml-10">
+        <div className="md:col-span-4 md:ml-10">
           <Typo variant="h1" component="h1">
             Nos actualités :
           </Typo>

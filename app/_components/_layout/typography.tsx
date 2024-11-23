@@ -51,16 +51,16 @@ export const Typo = ({
       variantStyles = "text-8xl";
       break;
     case "h1":
-      variantStyles = "text-6xl font-h1 pb-5 ";
+      variantStyles = "text-3xl md:text-6xl font-h1 pb-5 ";
       break;
     case "h2":
-      variantStyles = "text-5xl";
+      variantStyles = "text-2xl md:text-5xl";
       break;
     case "h3":
-      variantStyles = "text-4xl";
+      variantStyles = "text-xl md:text-4xl";
       break;
     case "h4":
-      variantStyles = "text-3xl";
+      variantStyles = "text-lg md:text-3xl";
       break;
     case "h5":
       variantStyles = "text-2xl";

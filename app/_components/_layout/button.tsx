@@ -12,10 +12,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-primary text-gray-light shadow hover:bg-primary/90",
-        secondary: "bg-secondary text-gray-light hover:bg-secondary/90",
-        danger: "bg-danger text-gray-light hover:bg-danger/90",
-        success: "bg-success text-gray-light hover:bg-success/90",
+        primary: "bg-primary text-gray-light shadow hover:bg-primary/60",
+        secondary: "bg-secondary text-gray-light hover:bg-secondary/60",
+        danger: "bg-danger text-gray-light hover:bg-danger/60",
+        success: "bg-success text-gray-light hover:bg-success/60",
         outline: "border border-gray text-gray hover:bg-gray-light",
         disabled:
           "bg-gray-light text-gray-dark border border-gray cursor-not-allowed",

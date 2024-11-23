@@ -1,10 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverActions: true, // Active les actions serveur expérimentales
+  },
   images: {
     remotePatterns: [
       { hostname: "img.clerk.com" },
       { hostname: "utfs.io", protocol: "https", port: "" },
-      { hostname : "via.placeholder.com" },
+      { hostname: "via.placeholder.com" },
     ],
   },
   webpack: (config, { isServer }) => {

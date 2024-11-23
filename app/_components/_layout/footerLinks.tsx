@@ -20,7 +20,7 @@ export const footerLinks = [
   {
     id: 2,
     name: "Réservation",
-    href: "/reservation",
+    href: "/seances",
   },
 ];
 
