@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/app/_components/_layout/button";
+import { Typo } from "@/app/_components/_layout/typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -12,13 +14,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { prisma } from "@/db/db";
-import { v4 as uuidv4 } from "uuid";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { fetchGenres } from "./actions";
-import { Typo } from "@/app/_components/_layout/typography";
-import { Button } from "@/app/_components/_layout/button";
 
 export function MovieForm() {
   const form = useForm({

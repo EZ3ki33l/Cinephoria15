@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
+import "../globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { frFR } from "@clerk/localizations";
 import { Toaster } from "sonner";
-import { Navbar } from "./_components/_layout/navBar";
-import { Container } from "./_components/_layout/container";
-import { Footer } from "./_components/_layout/footer";
+import { Container } from "../_components/_layout/container";
+import { Navbar } from "../_components/_layout/navBar";
+import { Footer } from "../_components/_layout/footer";
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+  src: "../fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+  src: "../fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
 });

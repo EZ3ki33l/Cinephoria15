@@ -2,11 +2,10 @@ import { BackgroundBeamsWithCollision } from "@/components/ui/backgroundBeamsWit
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Typo } from "./_components/_layout/typography";
-import { Maps } from "./_components/_maps/maps";
-import { Button } from "./_components/_layout/button";
-import { useIsMobile } from "@/hooks/use-mobile";
-import ResponsiveComponent from "./_components/homeBackground";
+import { Typo } from "../_components/_layout/typography";
+import { Maps } from "../_components/_maps/maps";
+import { Button } from "../_components/_layout/button";
+
 
 export default function Home() {
   return (
