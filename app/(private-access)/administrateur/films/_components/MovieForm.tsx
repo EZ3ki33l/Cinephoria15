@@ -16,7 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { fetchGenres } from "./actions";
+import { createMovie, fetchGenres } from "./actions";
+import { UploadDropzone } from "@/utils/uploadthing";
+import { toast } from "sonner";
 
 export function MovieForm() {
   const form = useForm({
@@ -28,6 +30,7 @@ export function MovieForm() {
       releaseDate: "",
       trailer: "",
       summary: "",
+      images : []
     },
   });
   // Charge les données de Prisma
@@ -45,6 +48,17 @@ export function MovieForm() {
 
     loadGenres();
   }, []);
+
+  const onSubmit = async (data: any) => {
+    try {
+      // Sauvegarder le film dans la base de données via Prisma (action server)
+      const movieData = await createMovie(data);
+      toast.success("Film enregistré avec succès");
+    } catch (error) {
+      toast.error("Erreur lors de l'enregistrement du film");
+    }
+  };
+
   return (
     <Form {...form}>
       <div className="flex flex-col gap-y-5 justify-center">
@@ -207,11 +221,32 @@ export function MovieForm() {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="images"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Image du film :</FormLabel>
+              <UploadDropzone
+                endpoint="imageUploader" // Replace with your image upload endpoint
+                onClientUploadComplete={(res) => {
+                  field.onChange(res[0].url); // Set the image URL to the form field
+                  toast.success("Téléchargement réussi");
+                }}
+                onUploadError={(error: Error) => {
+                  toast.error("Erreur lors du téléchargement");
+                }}
+              />
+              <FormDescription>Uploader une image du film</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="flex justify-between pt-10">
           <Button variant="danger" size={"large"} action={() => form.reset()}>
             Effacer
           </Button>
-          <Button variant="secondary" size={"large"} type="submit">
+          <Button variant="secondary" size={"large"} type="submit" onClick={form.handleSubmit(onSubmit)}>
             Valider
           </Button>
         </div>

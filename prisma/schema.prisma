@@ -19,12 +19,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  firstName String
-  lastName  String
-  userName  String? @unique
-  email     String? @unique
-  image     String?
-  favoriteGenre Genre? 
+  firstName     String
+  lastName      String
+  userName      String? @unique
+  email         String? @unique
+  image         String?
+  favoriteGenre Genre?
 
   Admin   Admin?
   Manager Manager?
@@ -60,11 +60,10 @@ model Cinema {
   Address     Address     @relation(fields: [addressId], references: [id])
   addressId   Int
   isOpen      Boolean?    @default(false)
-  isHandicap  Boolean     @default(false)
   Screens     Screen[]
   Managers    Manager[]
   Equipment   Equipment[]
-  description Json
+  description String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -100,13 +99,23 @@ model Screen {
 }
 
 model Seat {
-  id       Int    @id @default(autoincrement())
-  row      Int
-  column   Int
-  screenId Int
-  Screen   Screen @relation(fields: [screenId], references: [id], onDelete: Cascade)
+  id         Int     @id @default(autoincrement())
+  row        Int
+  column     Int
+  screenId   Int
+  isHandicap Boolean @default(false)
+  Screen     Screen  @relation(fields: [screenId], references: [id], onDelete: Cascade)
 
   Booking Booking[]
+}
+
+enum Equipment {
+  PARKING_GRATUIT
+  STAND_CONFISERIE
+  JEUX_ARCADE
+  WIFI_GRATUIT
+  ACCES_PMR
+  BOUTIQUE_GOODIES
 }
 
 model Movie {
@@ -222,15 +231,6 @@ enum Genre {
 enum ShowtimeStatus {
   REPORTE
   ANNULE
-}
-
-enum Equipment {
-  PARKING_GRATUIT
-  STAND_CONFISERIE
-  JEUX_ARCADE
-  WIFI_GRATUIT
-  ACCES_PMR
-  BOUTIQUE_GOODIES
 }
 
 model Post {
