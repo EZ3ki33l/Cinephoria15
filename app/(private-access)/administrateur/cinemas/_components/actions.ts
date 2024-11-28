@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/db/db";
+import { revalidatePath } from "@/hooks/revalidePath";
+import { Prisma } from "@prisma/client";
 
 export async function getAllEquipments() {
   try {
@@ -48,58 +50,86 @@ export async function getAllSoundSystemType() {
   }
 }
 
-export async function createCinema(data: any) {
-  console.log("Données reçues par l'action server :", data);
+interface Address {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+  street: string;
+  postalCode: number;
+  city: string;
+  lat: number;
+  lng: number;
+}
+
+export const createCinemaAction = async (formData: any) => {
+  const { name, description, address, manager, equipments, screens } = formData;
 
   try {
-    // Préparation des données pour Prisma
-    const transformedData = {
-      name: data.name,
-      description: data.description,
-      Address: {
-        create: {
-          street: data.street,
-          postalCode: data.postalCode,
-          city: data.city,
-          lat: data.lat,
-          lng: data.lng,
-        },
+    // Créer l'adresse
+    const newAddress: Address = await prisma.address.create({
+      data: {
+        street: address.street,
+        postalCode: address.postalCode,
+        city: address.city,
+        lat: address.lat,
+        lng: address.lng,
       },
-      Managers: {
-        connect: [{ id: data.manager.id }],
-      },
-      Equipment: data.equipments.map(
-        (equipment: { label: string }) => equipment.label
-      ), // Adaptation ici
-      Screens: {
-        create: data.screens.map((screen: any) => ({
-          number: screen.number,
-          rows: screen.rows,
-          columns: screen.columns,
-          projectionType: screen.projectionType,
-          soundSystemType: screen.soundSystemType,
-          price: screen.price,
-          Seats: {
-            create: screen.seats.map((seat: any) => ({
-              row: seat.row,
-              column: seat.column,
-              isHandicap: seat.isHandicap || false,
-            })),
-          },
-        })),
-      },
-    };
-
-    console.log("Données transformées pour Prisma :", transformedData);
-
-    // Création du cinéma
-    const result = await prisma.cinema.create({
-      data: transformedData,
     });
 
-    return { success: true, result };
-  } catch (error: any) {
-    console.error("Erreur lors de la création du cinéma :", error);
-    return { success: false, error: error.message };
+    // Créer le cinéma
+    const cinema = await prisma.cinema.create({
+      data: {
+        name,
+        description,
+        isOpen: false, // Définissez si le cinéma est ouvert ou non selon la logique de votre application
+        addressId: address.id, // Lier l'adresse
+        Managers: {
+          create: [
+            {
+              id: manager.id, // Assurez-vous que l'ID du manager existe et est valide
+            },
+          ],
+        },
+        Equipment: {
+          create: equipments.map((equipment: { name: string }) => ({
+            name: equipment.name,
+          })),
+        },
+        Screens: {
+          create: screens.map((screen: any) => ({
+            number: screen.number,
+            price: screen.price,
+            projectionTypeId: screen.projectionTypeId, // Assurez-vous que l'ID du type de projection existe
+            soundSystemTypeId: screen.soundSystemTypeId, // Assurez-vous que l'ID du type de son existe
+            Seats: {
+              create: screen.seats.map((seat: any) => ({
+                row: seat.row,
+                column: seat.column,
+                isHandicap: seat.isHandicap,
+              })),
+            },
+            Showtimes: {
+              create: screen.showtimes.map((showtime: any) => ({
+                time: showtime.time,
+                movie: showtime.movie, // Exemple : Assurez-vous que vous avez un film dans votre base de données
+              })),
+            },
+          })),
+        },
+      },
+    });
+
+    // Revalidation de cache, si nécessaire
+    revalidatePath("/");
+
+    return cinema;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error creating cinema:", error);
+      throw new Error("Error creating cinema: " + error.message);
+    } else {
+      console.error("An unknown error occurred:", error);
+      throw error;
+    }
   }
-}
+};

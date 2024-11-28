@@ -71,11 +71,15 @@ export function Navbar({ className }: { className?: string }) {
             </MenuItem>
             <MenuItem setActive={setActive} active={active} item="Autres">
               <div className="flex flex-col space-y-4 text-sm">
-                <HoveredLink href="/administrateur/equipments">
+                <HoveredLink href="/administrateur/equipements">
                   Equipements
                 </HoveredLink>
-                <HoveredLink href="/administrateur/genres">
-                  Genres
+                <HoveredLink href="/administrateur/genres">Genres</HoveredLink>
+                <HoveredLink href="/administrateur/projection">
+                  Type de projection
+                </HoveredLink>
+                <HoveredLink href="/administrateur/son">
+                  Type de son
                 </HoveredLink>
               </div>
             </MenuItem>

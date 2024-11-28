@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Typo } from "../_components/_layout/typography";
 import { Maps } from "../_components/_maps/maps";
 import { Button } from "../_components/_layout/button";
-
+import { ExpandableCard } from "../_components/expandableMovieCard";
 
 export default function Home() {
   return (
@@ -31,7 +31,9 @@ export default function Home() {
         <Typo variant="h1" component="h1">
           Les dernières sorties :
         </Typo>
-        <div className="pt-5">{/* <ExpandableCard /> */}</div>
+        <div className="pt-5">
+          <ExpandableCard />
+        </div>
       </div>
       <Separator className="my-10" />
       <div className="flex flex-col py-5">

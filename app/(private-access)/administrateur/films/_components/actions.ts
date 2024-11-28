@@ -114,3 +114,31 @@ export async function getAllMovies() {
 
   return movies;
 }
+
+export async function GetRecentMovies() {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const movies = await prisma.movie.findMany({
+    where: {
+      createdAt: {
+        gte: oneWeekAgo,
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      genres: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return movies.map((movie) => ({
+    ...movie,
+    genre: movie.genres.map((genre) => genre.name).join(", "),
+  }));
+}

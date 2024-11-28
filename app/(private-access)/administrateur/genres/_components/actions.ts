@@ -30,7 +30,7 @@ export async function createGenres(genres: genreInput[]) {
 
     return { success: true, result };
   } catch (error: any) {
-    console.error("Erreur lors de la création des équipements :", error);
+    console.error("Erreur lors de la création des genres :", error);
     return { success: false, error: error.message };
   }
 }

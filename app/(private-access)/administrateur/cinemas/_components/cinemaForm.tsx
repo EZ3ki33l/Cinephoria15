@@ -14,9 +14,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useEffect, useState } from "react";
-import { Field, FieldValues, useFieldArray, useForm } from "react-hook-form";
 import {
-  createCinema,
+  Field,
+  FieldValues,
+  useController,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
+import {
+  createCinemaAction,
   fetchManagers,
   getAllEquipments,
   getAllProjectionType,
@@ -31,9 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScreenVisualizer } from "@/app/_components/seatVisualizer";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { z } from "zod";
 
 interface Manager {
   id: string;
@@ -42,7 +46,20 @@ interface Manager {
 
 export function CinemaForm() {
   const form = useForm({
-    
+    defaultValues: {
+      name: "",
+      description: "",
+      street: "",
+      postalCode: "",
+      city: "",
+      lat: 0,
+      lng: 0,
+      manager: "",
+      equipments: [],
+      screens: [],
+    } as {
+      [key: string]: any;
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -50,34 +67,35 @@ export function CinemaForm() {
     name: "screens",
   });
 
-  // Charge les données de Prisma
-  const [equipments, setEquipments] = useState<{ id: string; label: string }[]>(
-    []
-  );
-  const [managers, setManagers] = useState<Manager[]>([]);
+  // Chargement des données depuis Prisma
   const [projectionTypes, setProjectionTypes] = useState<
-    { id: string; label: string }[]
+    { id: number; name: string }[]
   >([]);
   const [soundSystemTypes, setSoundSystemTypes] = useState<
-    { id: string; label: string }[]
+    { id: number; name: string }[]
   >([]);
+  const [equipments, setEquipments] = useState<{ id: number; name: string }[]>(
+    []
+  );
+  const [managers, setManagers] = useState<{ id: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Appeler les Server Actions pour charger les données
   useEffect(() => {
     async function loadData() {
       try {
-        const projections = await getAllProjectionType();
-        const sounds = await getAllSoundSystemType();
-        const equipments = await getAllEquipments();
-        const managers = await fetchManagers();
+        setProjectionTypes(await getAllProjectionType());
+        setSoundSystemTypes(await getAllSoundSystemType());
+        setEquipments(await getAllEquipments());
+        setManagers(await fetchManagers());
       } catch (error) {
         console.error("Erreur lors du chargement des données :", error);
+        toast.error("Impossible de charger les données.");
       }
     }
-
     loadData();
   }, []);
 
+  // Ajout d'une salle
   const addScreen = () => {
     append({
       number: fields.length + 1,
@@ -86,15 +104,19 @@ export function CinemaForm() {
       projectionType: "",
       soundSystemType: "",
       price: 19,
-      seats: [
-        { row: 1, column: 1 },
-        { row: 1, column: 2 },
-      ],
     });
   };
 
   const onSubmit = async (data: any) => {
-
+    try {
+      setLoading(true);
+      await createCinemaAction(data); // Fonction pour créer un cinéma via l'API ou serveur
+      toast.success("Cinéma ajouté avec succès!");
+    } catch (error) {
+      toast.error("Erreur lors de l'ajout du cinéma.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,12 +151,9 @@ export function CinemaForm() {
               <FormControl>
                 <Select
                   onValueChange={(value) => {
-                    const selectedManager = managers.find(
-                      (manager) => manager.id === value
-                    );
-                    field.onChange(selectedManager); 
+                    field.onChange(value);
                   }}
-                  value={field.value?.id ?? ""}
+                  value={field.value ?? ""}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionnez un manager" />
@@ -258,9 +277,9 @@ export function CinemaForm() {
                     name="equipments"
                     render={({ field }) => {
                       const currentValue = field.value as {
-                        id: string;
-                        label: string;
-                      }[]; 
+                        id: number;
+                        name: string;
+                      }[];
                       const isChecked = currentValue?.some(
                         (e) => e.id === equipment.id
                       );
@@ -295,10 +314,7 @@ export function CinemaForm() {
                             />
                           </FormControl>
                           <Typo className="inline-block pl-3">
-                            {equipment.label
-                              .replace("_", " ")
-                              .toLowerCase()
-                              .replace(/^\w/, (c) => c.toUpperCase())}
+                            {equipment.name}
                           </Typo>
                         </FormItem>
                       );
@@ -401,8 +417,8 @@ export function CinemaForm() {
                         </SelectTrigger>
                         <SelectContent>
                           {projectionTypes.map((type) => (
-                            <SelectItem key={type.id} value={type.label}>
-                              {type.label}
+                            <SelectItem key={type.id} value={type.name}>
+                              {type.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -429,8 +445,8 @@ export function CinemaForm() {
                         </SelectTrigger>
                         <SelectContent>
                           {soundSystemTypes.map((type) => (
-                            <SelectItem key={type.id} value={type.label}>
-                              {type.label}
+                            <SelectItem key={type.id} value={type.name}>
+                              {type.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -481,6 +497,7 @@ export function CinemaForm() {
             size={"large"}
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
+            isLoading={loading}
           >
             Valider
           </Button>

@@ -1,4 +1,3 @@
-// app/_components/validators.ts
 import { z } from "zod";
 
 export const movieSchema = z.object({

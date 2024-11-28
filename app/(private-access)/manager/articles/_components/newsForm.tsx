@@ -18,39 +18,39 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { toast } from "sonner";
-import { createMovieAction, getAllGenres } from "./actions";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { movieSchema } from "./movieSchema";
+import { getAllcategories } from "../../categories/_components/actions";
+import { NewsSchema } from "./newsSchema";
+import { CreateNews } from "./actions";
 
-export function MovieForm() {
+export function NewsForm() {
   const form = useForm({
-    resolver: zodResolver(movieSchema),
+    resolver: zodResolver(NewsSchema),
     defaultValues: {
       title: "",
-      genre: [],
-      director: "",
-      duration: 0,
-      releaseDate: "",
-      trailer: "",
-      summary: "",
+      categories: [],
+      shortContent: "",
+      content: "",
       images: [], // Tableau vide par défaut
     },
   });
 
   // Charge les données de Prisma
-  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function loadGenres() {
+    async function loadCategories() {
       try {
-        const genres = await getAllGenres(); // Appel direct de l'action serveur
-        setGenres(genres);
+        const categories = await getAllcategories(); // Appel direct de l'action serveur
+        setCategories(categories);
       } catch (error) {
         console.error("Erreur lors du chargement des genres :", error);
       }
     }
-    loadGenres();
+    loadCategories();
   }, []);
 
   const onSubmit = async (values: any) => {
@@ -61,12 +61,12 @@ export function MovieForm() {
         images: Array.isArray(values.images) ? values.images : [values.images], // Forcer un tableau
       };
 
-      const result = await createMovieAction(transformedValues);
+      const result = await CreateNews(transformedValues);
       if (result.success) {
-        toast.success("Film créé avec succès !");
+        toast.success("Article créé avec succès !");
         form.reset();
       } else {
-        toast.error("Erreur lors de la création du film.");
+        toast.error("Erreur lors de la création de l'article.");
         console.error(result.errors || result.message);
       }
     } catch (error) {
@@ -99,41 +99,41 @@ export function MovieForm() {
           />
           <FormField
             control={form.control}
-            name="genre"
+            name="categories"
             render={() => (
               <FormItem>
                 <FormLabel>Genre :</FormLabel>
                 <div className="grid grid-cols-3 gap-3 justify-center items-center">
-                  {genres.map((genre) => (
+                  {categories.map((category) => (
                     <FormField
-                      key={genre.id}
+                      key={category.id}
                       control={form.control}
-                      name="genre"
+                      name="categories"
                       render={({ field }) => {
                         return (
-                          <FormItem key={genre.id}>
+                          <FormItem key={category.id}>
                             <FormControl>
                               <Checkbox
                                 required
                                 checked={(field.value as number[])?.includes(
-                                  genre.id
+                                  category.id
                                 )}
                                 onCheckedChange={(checked) => {
                                   return checked
                                     ? field.onChange([
                                         ...((field.value as number[]) ?? []),
-                                        genre.id,
+                                        category.id,
                                       ])
                                     : field.onChange(
                                         (field.value as number[])?.filter(
-                                          (value) => value !== genre.id
+                                          (value) => value !== category.id
                                         )
                                       );
                                 }}
                               />
                             </FormControl>
                             <Typo className="inline-block pl-3">
-                              {genre.name}
+                              {category.name}
                             </Typo>
                           </FormItem>
                         );
@@ -141,24 +141,22 @@ export function MovieForm() {
                     />
                   ))}
                 </div>
-                <FormDescription>
-                  Choisir un ou plusieurs genre(s)
-                </FormDescription>
+                <FormDescription>Choisir une catégorie</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="director"
+            name="shortContent"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nom du réalisateur :</FormLabel>
+                <FormLabel>Courte description :</FormLabel>
                 <FormControl>
                   <Input required placeholder="Tim Burton" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Renseigner le nom du réalisateur
+                  Renseigner une description courte
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -166,108 +164,53 @@ export function MovieForm() {
           />
           <FormField
             control={form.control}
-            name="duration"
+            name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Durée :</FormLabel>
+                <FormLabel>Description :</FormLabel>
                 <FormControl>
-                  <Input type="number" required placeholder="123" {...field} />
+                  <Input required placeholder="Tim Burton" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Renseigner la durée en minutes
-                </FormDescription>
+                <FormDescription>Renseigner une description</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="releaseDate"
+            name="images"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date de sortie :</FormLabel>
-                <FormControl>
-                  <Input type="date" required {...field} />
-                </FormControl>
-                <FormDescription>Renseigner la date de sortie</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="trailer"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bande annonce :</FormLabel>
-                <FormControl>
-                  <Input
-                    required
-                    placeholder="https://www.youtube.com/watch?v=CoZqL9N6Rx4"
-                    {...field}
-                  />
-                </FormControl>
+                <FormLabel>Image(s) du film :</FormLabel>
+                <UploadDropzone
+                  appearance={{
+                    button:
+                      "m-5 p-5 ut-ready:bg-primary-light/50 ut-uploading:cursor-not-allowed rounded-lg bg-primary bg-none after:bg-warning/50",
+                    container: "p-5",
+                    allowedContent:
+                      "flex h-8 flex-col items-center justify-center px-2 text-dark",
+                  }}
+                  endpoint="imageUploader"
+                  onClientUploadComplete={(res) => {
+                    const uploadedUrls = res.map((file) => file.url); // Collecter les URLs des images
+                    field.onChange([
+                      ...(field.value as string[]),
+                      ...uploadedUrls,
+                    ]); // Ajouter les nouvelles images au tableau existant
+                    toast.success("Téléchargement réussi");
+                  }}
+                  onUploadError={(error: Error) => {
+                    toast.error("Erreur lors du téléchargement");
+                  }}
+                />
                 <FormDescription>
-                  Renseigner l'url de la bande annonce
+                  Uploader une ou plusieurs images pour le film.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        <FormField
-          control={form.control}
-          name="summary"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Résumé :</FormLabel>
-              <FormControl>
-                <Textarea
-                  required
-                  className="min-h-[10svh]"
-                  placeholder="Après une terrible tragédie, la famille Deetz revient à Winter River. Toujours hantée par le souvenir de Beetlejuice, Lydia voit sa vie bouleversée lorsque sa fille Astrid, adolescente rebelle, ouvre accidentellement un portail vers l’Au-delà. Alors que le chaos plane sur les deux mondes, ce n’est qu’une question de temps avant que quelqu’un ne prononce le nom de Beetlejuice trois fois et que ce démon farceur ne revienne semer la pagaille…"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>Renseigner un résumé</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="images"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image(s) du film :</FormLabel>
-              <UploadDropzone
-                appearance={{
-                  button:
-                    "m-5 p-5 ut-ready:bg-primary-light/50 ut-uploading:cursor-not-allowed rounded-lg bg-primary bg-none after:bg-warning/50",
-                  container: "p-5",
-                  allowedContent:
-                    "flex h-8 flex-col items-center justify-center px-2 text-dark",
-                }}
-                endpoint="imageUploader"
-                onClientUploadComplete={(res) => {
-                  const uploadedUrls = res.map((file) => file.url); // Collecter les URLs des images
-                  field.onChange([
-                    ...(field.value as string[]),
-                    ...uploadedUrls,
-                  ]); // Ajouter les nouvelles images au tableau existant
-                  toast.success("Téléchargement réussi");
-                }}
-                onUploadError={(error: Error) => {
-                  toast.error("Erreur lors du téléchargement");
-                }}
-              />
-              <FormDescription>
-                Uploader une ou plusieurs images pour le film.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <div className="flex justify-between pt-10">
           <Button variant="danger" size={"large"} action={() => form.reset()}>
             Effacer
