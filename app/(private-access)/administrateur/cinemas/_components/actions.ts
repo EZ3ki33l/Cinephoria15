@@ -1,19 +1,15 @@
 "use server";
 
 import { prisma } from "@/db/db";
-import { Equipment } from "@prisma/client";
-import { v4 as uuidv4 } from "uuid";
 
-export async function fetchEquipments() {
-  const enumValues = await prisma.$queryRaw<Array<{ value: string }>>`
-    SELECT unnest(enum_range(NULL::"Equipment"))::text AS value
-  `;
-
-  // Formater les résultats avec des IDs uniques
-  return enumValues.map((item) => ({
-    id: uuidv4(),
-    label: item.value,
-  }));
+export async function getAllEquipments() {
+  try {
+    const equipments = await prisma.equipment.findMany();
+    return equipments;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des équipements :", error);
+    throw new Error("Impossible de récupérer les équipements");
+  }
 }
 
 export async function fetchManagers() {
@@ -29,32 +25,27 @@ export async function fetchManagers() {
   }));
 }
 
-export async function fetchProjectionTypes() {
-  const projectionTypes = await prisma.$queryRaw<Array<{ value: string }>>`
-      SELECT unnest(enum_range(NULL::"ProjectionType"))::text AS value
-    `;
-
-  return projectionTypes.map((type) => ({
-    id: uuidv4(),
-    label: type.value
-      .replace("_", " ")
-      .toLowerCase()
-      .replace(/^\w/, (c) => c.toUpperCase()),
-  }));
+export async function getAllProjectionType() {
+  try {
+    const projectionType = await prisma.projectionType.findMany();
+    return projectionType;
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des types de projection :",
+      error
+    );
+    throw new Error("Impossible de récupérer les types de projection");
+  }
 }
 
-export async function fetchSoundSystemTypes() {
-  const soundSystemTypes = await prisma.$queryRaw<Array<{ value: string }>>`
-      SELECT unnest(enum_range(NULL::"SoundSystemType"))::text AS value
-    `;
-
-  return soundSystemTypes.map((type) => ({
-    id: uuidv4(),
-    label: type.value
-      .replace("_", " ")
-      .toLowerCase()
-      .replace(/^\w/, (c) => c.toUpperCase()),
-  }));
+export async function getAllSoundSystemType() {
+  try {
+    const soundSystemType = await prisma.soundSystemType.findMany();
+    return soundSystemType;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des types de son :", error);
+    throw new Error("Impossible de récupérer les types de son");
+  }
 }
 
 export async function createCinema(data: any) {
@@ -77,7 +68,9 @@ export async function createCinema(data: any) {
       Managers: {
         connect: [{ id: data.manager.id }],
       },
-      Equipment: data.equipments.map((equipment: { label: string }) => equipment.label), // Adaptation ici
+      Equipment: data.equipments.map(
+        (equipment: { label: string }) => equipment.label
+      ), // Adaptation ici
       Screens: {
         create: data.screens.map((screen: any) => ({
           number: screen.number,
@@ -105,7 +98,7 @@ export async function createCinema(data: any) {
     });
 
     return { success: true, result };
-  } catch (error : any) {
+  } catch (error: any) {
     console.error("Erreur lors de la création du cinéma :", error);
     return { success: false, error: error.message };
   }

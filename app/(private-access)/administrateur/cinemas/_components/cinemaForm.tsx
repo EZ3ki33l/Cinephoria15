@@ -17,10 +17,10 @@ import React, { useEffect, useState } from "react";
 import { Field, FieldValues, useFieldArray, useForm } from "react-hook-form";
 import {
   createCinema,
-  fetchEquipments,
   fetchManagers,
-  fetchProjectionTypes,
-  fetchSoundSystemTypes,
+  getAllEquipments,
+  getAllProjectionType,
+  getAllSoundSystemType,
 } from "./actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -31,7 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScreenVisualizer } from "@/app/_components/seatVisualizer";
-import { cinemaSchema } from "./cinemaSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -43,19 +42,7 @@ interface Manager {
 
 export function CinemaForm() {
   const form = useForm({
-    resolver: zodResolver(cinemaSchema),
-    defaultValues: {
-      name: "",
-      manager: { id: "" },
-      street: "",
-      postalCode: 0, 
-      city: "",
-      lat: 0, 
-      lng: 0,
-      equipments: [],
-      description: "",
-      screens: [],
-    } as z.infer<typeof cinemaSchema>,
+    
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -79,14 +66,10 @@ export function CinemaForm() {
   useEffect(() => {
     async function loadData() {
       try {
-        const projection = await fetchProjectionTypes();
-        const sound = await fetchSoundSystemTypes();
-        const loadedEquipments = await fetchEquipments();
-        const loadedManagers = await fetchManagers();
-        setEquipments(loadedEquipments);
-        setManagers(loadedManagers);
-        setProjectionTypes(projection);
-        setSoundSystemTypes(sound);
+        const projections = await getAllProjectionType();
+        const sounds = await getAllSoundSystemType();
+        const equipments = await getAllEquipments();
+        const managers = await fetchManagers();
       } catch (error) {
         console.error("Erreur lors du chargement des données :", error);
       }
@@ -111,15 +94,7 @@ export function CinemaForm() {
   };
 
   const onSubmit = async (data: any) => {
-    console.log("Formulaire soumis avec les données:", data);
 
-    try {
-      const response = await createCinema(data);
-      console.log("Réponse du serveur:", response);
-    } catch (error) {
-      console.error("Erreur dans l'envoi des données:", error);
-      toast("Je vais caner");
-    }
   };
 
   return (

@@ -15,7 +15,7 @@ export function Navbar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "fixed top-10 inset-x-0 max-w-2xl mx-auto z-40 bg-transparent",
+        "fixed top-10 inset-x-0 max-w-3xl mx-auto z-40 bg-transparent",
         className
       )}
     >
@@ -66,6 +66,16 @@ export function Navbar({ className }: { className?: string }) {
                 </HoveredLink>
                 <HoveredLink href="/administrateur/films/nouveau">
                   Créer
+                </HoveredLink>
+              </div>
+            </MenuItem>
+            <MenuItem setActive={setActive} active={active} item="Autres">
+              <div className="flex flex-col space-y-4 text-sm">
+                <HoveredLink href="/administrateur/equipments">
+                  Equipements
+                </HoveredLink>
+                <HoveredLink href="/administrateur/genres">
+                  Genres
                 </HoveredLink>
               </div>
             </MenuItem>

@@ -1,8 +1,6 @@
 "use server";
 
 import { prisma } from "@/db/db";
-import { revalidatePath } from "@/hooks/revalidePath";
-import { notFound } from "next/navigation";
 
 export async function getAllManagers() {
   return prisma.manager.findMany({

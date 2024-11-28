@@ -21,8 +21,6 @@ import { Genre } from "@prisma/client";
 import { DeleteDropdownItem } from "./_components/deleteDropItem";
 import { getAllManagers } from "./_components/actions";
 import { ManagerForm } from "./_components/ManagerForm";
-import { Button } from "@/app/_components/_layout/button";
-import { useRouter } from "next/navigation";
 
 type ManagerWithUser = {
   id: string;

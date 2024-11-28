@@ -16,12 +16,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { createMovie, fetchGenres } from "./actions";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { toast } from "sonner";
+import { createMovieAction, getAllGenres } from "./actions";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { movieSchema } from "./movieSchema";
 
 export function MovieForm() {
   const form = useForm({
+    resolver: zodResolver(movieSchema),
     defaultValues: {
       title: "",
       genre: [],
@@ -30,32 +33,45 @@ export function MovieForm() {
       releaseDate: "",
       trailer: "",
       summary: "",
-      images : []
+      images: [], // Tableau vide par défaut
     },
   });
+
   // Charge les données de Prisma
-  const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function loadGenres() {
       try {
-        const genres = await fetchGenres(); // Appel direct de l'action serveur
-        setItems(genres);
+        const genres = await getAllGenres(); // Appel direct de l'action serveur
+        setGenres(genres);
       } catch (error) {
         console.error("Erreur lors du chargement des genres :", error);
       }
     }
-
     loadGenres();
   }, []);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (values: any) => {
     try {
-      // Sauvegarder le film dans la base de données via Prisma (action server)
-      const movieData = await createMovie(data);
-      toast.success("Film enregistré avec succès");
+      const transformedValues = {
+        ...values,
+        duration: Number(values.duration), // Convertir duration en nombre
+        images: Array.isArray(values.images) ? values.images : [values.images], // Forcer un tableau
+      };
+
+      const result = await createMovieAction(transformedValues);
+      if (result.success) {
+        toast.success("Film créé avec succès !");
+        form.reset();
+      } else {
+        toast.error("Erreur lors de la création du film.");
+        console.error(result.errors || result.message);
+      }
     } catch (error) {
-      toast.error("Erreur lors de l'enregistrement du film");
+      toast.error("Erreur lors de la soumission.");
+      console.error(error);
     }
   };
 
@@ -88,39 +104,36 @@ export function MovieForm() {
               <FormItem>
                 <FormLabel>Genre :</FormLabel>
                 <div className="grid grid-cols-3 gap-3 justify-center items-center">
-                  {items.map((item) => (
+                  {genres.map((genre) => (
                     <FormField
-                      key={item.id}
+                      key={genre.id}
                       control={form.control}
                       name="genre"
                       render={({ field }) => {
                         return (
-                          <FormItem key={item.id}>
+                          <FormItem key={genre.id}>
                             <FormControl>
                               <Checkbox
                                 required
-                                checked={(field.value as string[])?.includes(
-                                  item.id
+                                checked={(field.value as number[])?.includes(
+                                  genre.id
                                 )}
                                 onCheckedChange={(checked) => {
                                   return checked
                                     ? field.onChange([
-                                        ...((field.value as string[]) ?? []),
-                                        item.id,
+                                        ...((field.value as number[]) ?? []),
+                                        genre.id,
                                       ])
                                     : field.onChange(
-                                        (field.value as string[])?.filter(
-                                          (value) => value !== item.id
+                                        (field.value as number[])?.filter(
+                                          (value) => value !== genre.id
                                         )
                                       );
                                 }}
                               />
                             </FormControl>
                             <Typo className="inline-block pl-3">
-                              {item.label
-                                .replace("_", " ")
-                                .toLowerCase()
-                                .replace(/^\w/, (c) => c.toUpperCase())}
+                              {genre.name}
                             </Typo>
                           </FormItem>
                         );
@@ -226,18 +239,24 @@ export function MovieForm() {
           name="images"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image du film :</FormLabel>
+              <FormLabel>Image(s) du film :</FormLabel>
               <UploadDropzone
-                endpoint="imageUploader" // Replace with your image upload endpoint
+                endpoint="imageUploader"
                 onClientUploadComplete={(res) => {
-                  field.onChange(res[0].url); // Set the image URL to the form field
+                  const uploadedUrls = res.map((file) => file.url); // Collecter les URLs des images
+                  field.onChange([
+                    ...(field.value as string[]),
+                    ...uploadedUrls,
+                  ]); // Ajouter les nouvelles images au tableau existant
                   toast.success("Téléchargement réussi");
                 }}
                 onUploadError={(error: Error) => {
                   toast.error("Erreur lors du téléchargement");
                 }}
               />
-              <FormDescription>Uploader une image du film</FormDescription>
+              <FormDescription>
+                Uploader une ou plusieurs images pour le film.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -246,7 +265,13 @@ export function MovieForm() {
           <Button variant="danger" size={"large"} action={() => form.reset()}>
             Effacer
           </Button>
-          <Button variant="secondary" size={"large"} type="submit" onClick={form.handleSubmit(onSubmit)}>
+          <Button
+            variant="secondary"
+            size={"large"}
+            type="submit"
+            isLoading={loading}
+            onClick={form.handleSubmit(onSubmit)}
+          >
             Valider
           </Button>
         </div>

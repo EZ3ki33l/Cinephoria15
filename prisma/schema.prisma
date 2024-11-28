@@ -24,7 +24,7 @@ model User {
   userName      String? @unique
   email         String? @unique
   image         String?
-  favoriteGenre Genre?
+  favoriteGenre Genre?  @relation(fields: [genreId], references: [id])
 
   Admin   Admin?
   Manager Manager?
@@ -33,6 +33,7 @@ model User {
   Tickets  Ticket[]
   posts    Post[]
   likes    Like[]
+  genreId  Int?
 }
 
 model Admin {
@@ -82,18 +83,22 @@ model Address {
 }
 
 model Screen {
-  id              Int             @id @default(autoincrement())
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  number          Int
-  cinemaId        Int
-  Cinema          Cinema          @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
-  Seats           Seat[]
-  Showtimes       Showtime[]
-  projectionType  ProjectionType  @default(DOLBY_CINEMA)
-  soundSystemType SoundSystemType @default(DOLBY_ATMOS)
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  number    Int
+  cinemaId  Int
+  Cinema    Cinema     @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  Seats     Seat[]
+  Showtimes Showtime[]
 
   price Float @default(19)
+
+  projectionTypeId Int
+  ProjectionType   ProjectionType @relation(fields: [projectionTypeId], references: [id])
+
+  soundSystemTypeId Int
+  SoundSystemType   SoundSystemType @relation(fields: [soundSystemTypeId], references: [id])
 
   @@unique([cinemaId, number])
 }
@@ -109,13 +114,11 @@ model Seat {
   Booking Booking[]
 }
 
-enum Equipment {
-  PARKING_GRATUIT
-  STAND_CONFISERIE
-  JEUX_ARCADE
-  WIFI_GRATUIT
-  ACCES_PMR
-  BOUTIQUE_GOODIES
+model Equipment {
+  id       Int     @id @default(autoincrement())
+  name     String
+  Cinema   Cinema? @relation(fields: [cinemaId], references: [id])
+  cinemaId Int?
 }
 
 model Movie {
@@ -124,7 +127,7 @@ model Movie {
   updatedAt   DateTime   @updatedAt
   title       String
   director    String
-  genre       Genre
+  genres      Genre[]    @relation("MovieGenres") // Relation many-to-many
   duration    Int // Duration in minutes
   releaseDate DateTime?
   summary     String
@@ -190,42 +193,24 @@ model Ticket {
   Bookings Booking[]
 }
 
-enum ProjectionType {
-  IMAX
-  DOLBY_CINEMA
+model ProjectionType {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Screen Screen[]
 }
 
-enum SoundSystemType {
-  DOLBY_DIGITAL
-  DOLBY_ATMOS
-  DTS
-  DTS_X
-  AURO_3D
-  IMAX_ENHANCED
+model SoundSystemType {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Screen Screen[]
 }
 
-enum Genre {
-  ACTION
-  AVENTURE
-  ANIMATION
-  COMEDIE
-  COURT_METRAGE
-  CRIME
-  DOCUMENTAIRE
-  DRAME
-  FAMILLE
-  FANTASIE
-  GUERRE
-  HISTORIQUE
-  HORREUR
-  MUSIQUE
-  MYSTERE
-  POLICIER
-  ROMANTIQUE
-  SCIENCE_FICTION
-  SPORT
-  THRILLER
-  WESTERN
+model Genre {
+  id      Int     @id @default(autoincrement())
+  name    String
+  User    User[]
+  movies  Movie[] @relation("MovieGenres") // Relation many-to-many
+  movieId Int?
 }
 
 enum ShowtimeStatus {
