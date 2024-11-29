@@ -1,7 +1,5 @@
-import React from 'react'
+import { NewsForm } from "../_components/newsForm";
 
 export default function page() {
-  return (
-    <div>page</div>
-  )
+  return <NewsForm />;
 }

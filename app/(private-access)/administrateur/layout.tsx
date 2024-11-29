@@ -35,6 +35,9 @@ export default async function Layout({
       id: userId as string,
     },
   });
+  if (!isAdmin) {
+    <Unauthorized uid={userId} role="administrateur" />;
+  }
 
   if (isAdmin) {
     return (

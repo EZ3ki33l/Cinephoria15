@@ -53,9 +53,13 @@ export async function CreateNews(data: any) {
     const news = await prisma.news.create({
       data: {
         title: validatedData.title,
-        category: validatedData.category,
+        category: {
+          connect: {
+            id: validatedData.categories,
+          },
+        },
         shortContent: validatedData.shortContent,
-        content: validatedData.Content,
+        content: validatedData.content,
         images: validatedData.images,
       },
     });
@@ -72,5 +76,9 @@ export async function CreateNews(data: any) {
 }
 
 export async function getAllNews() {
-  return prisma.news.findMany();
+  return prisma.news.findMany({
+    include: {
+      category: true,
+    },
+  });
 }

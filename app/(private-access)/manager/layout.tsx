@@ -35,6 +35,9 @@ export default async function Layout({
       id: userId as string,
     },
   });
+  if (!isManager) {
+    <Unauthorized uid={userId} role="manager" />;
+  }
 
   if (isManager) {
     return (
@@ -56,5 +59,5 @@ export default async function Layout({
         </html>
       </ClerkProvider>
     );
-  } // Renvoyer les enfants sans le layout si l'utilisateur est un administrateur
+  } 
 }

@@ -6,6 +6,7 @@ import { Typo } from "../_components/_layout/typography";
 import { Maps } from "../_components/_maps/maps";
 import { Button } from "../_components/_layout/button";
 import { ExpandableCard } from "../_components/expandableMovieCard";
+import { NewsCarousel } from "../_components/newsCarousel";
 
 export default function Home() {
   return (
@@ -103,7 +104,9 @@ export default function Home() {
           <Typo variant="h1" component="h1">
             Nos actualités :
           </Typo>
-          <div className="">{/* <NewsCarousel /> */}</div>
+          <div className="">
+            <NewsCarousel />
+          </div>
         </div>
       </div>
     </div>

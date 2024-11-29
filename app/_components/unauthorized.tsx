@@ -1,10 +1,10 @@
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { Role } from "@/utils/types";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
-import { CopyToClipboard } from "./copyToClipboard";
-import { Typo } from "./_layout/typography";
-import { Button } from "./_layout/button";
 import Image from "next/image";
+import { Typo } from "./_layout/typography";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import { Button } from "./_layout/button";
+import { CopyToClipboard } from "./copyToClipboard";
 
 export interface ITellThemProps {
   uid: string;
@@ -34,7 +34,7 @@ export const Unconnected = ({ role }: ITellThemProps) => {
         <Typo variant="h4" component="p" theme="danger">
           Accès non autorisé !
         </Typo>
-        <Typo variant="body-base" component="p">
+        <Typo>
           Vous devez <span className="font-semibold">vous connecter</span> et
           avoir le rôle <span className="font-bold">{role}</span> afin de
           pouvoir accéder à cette page.
