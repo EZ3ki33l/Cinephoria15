@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/db/db";
+import { Cinema } from "@prisma/client";
 
 export async function getAllEquipments() {
   try {

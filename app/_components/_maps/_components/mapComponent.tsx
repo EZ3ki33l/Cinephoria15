@@ -41,7 +41,7 @@ const options = {
 export function MapComponent() {
   // You can also fetch data as a prop
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY as string,
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
   });
 
   const [isInfoWindowOpen, setIsInfoWindowOpen] = useState<boolean[]>([]);
