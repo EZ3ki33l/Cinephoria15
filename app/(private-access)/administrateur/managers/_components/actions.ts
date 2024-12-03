@@ -5,7 +5,8 @@ import { prisma } from "@/db/db";
 export async function getAllManagers() {
   return prisma.manager.findMany({
     include: {
-      User: true, // Inclut les données de l'utilisateur liées
+      User: true,
+      // Autres relations que vous souhaitez récupérer
     },
   });
 }

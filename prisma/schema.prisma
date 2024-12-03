@@ -50,9 +50,8 @@ model Manager {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  User     User    @relation(fields: [id], references: [id])
-  Cinema   Cinema? @relation(fields: [cinemaId], references: [id])
-  cinemaId Int?
+  User   User     @relation(fields: [id], references: [id])
+  Cinema Cinema[]
 }
 
 model Cinema {
@@ -62,8 +61,9 @@ model Cinema {
   addressId   Int
   isOpen      Boolean?    @default(false)
   Screens     Screen[]
-  Managers    Manager[]
-  Equipment   Equipment[]
+  Manager     Manager     @relation(fields: [managerId], references: [id])
+  managerId   String
+  Equipment   Equipment[] @relation("CinemaEquipment") // Many-to-many implicite
   description String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -115,10 +115,21 @@ model Seat {
 }
 
 model Equipment {
-  id       Int     @id @default(autoincrement())
-  name     String
-  Cinema   Cinema? @relation(fields: [cinemaId], references: [id])
-  cinemaId Int?
+  id      Int      @id @default(autoincrement())
+  name    String
+  Cinemas Cinema[] @relation("CinemaEquipment") // Many-to-many implicite
+}
+
+model ProjectionType {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Screen Screen[]
+}
+
+model SoundSystemType {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Screen Screen[]
 }
 
 model Movie {
@@ -198,18 +209,6 @@ model Ticket {
   qrCode String?
 
   Bookings Booking[]
-}
-
-model ProjectionType {
-  id     Int      @id @default(autoincrement())
-  name   String
-  Screen Screen[]
-}
-
-model SoundSystemType {
-  id     Int      @id @default(autoincrement())
-  name   String
-  Screen Screen[]
 }
 
 model Genre {

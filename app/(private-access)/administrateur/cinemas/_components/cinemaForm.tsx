@@ -14,13 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useEffect, useState } from "react";
-import {
-  Field,
-  FieldValues,
-  useController,
-  useFieldArray,
-  useForm,
-} from "react-hook-form";
+import { FieldValues, useFieldArray, useForm } from "react-hook-form";
 import {
   createCinemaAction,
   fetchManagers,
@@ -38,6 +32,8 @@ import {
 } from "@/components/ui/select";
 import { ScreenVisualizer } from "@/app/_components/seatVisualizer";
 import { toast } from "sonner";
+import { revalidatePath } from "@/hooks/revalidePath";
+import { useRouter } from "next/navigation";
 
 interface Manager {
   id: string;
@@ -107,12 +103,29 @@ export function CinemaForm() {
     });
   };
 
+  const router = useRouter();
+
   const onSubmit = async (data: any) => {
     try {
       setLoading(true);
-      await createCinemaAction(data); // Fonction pour créer un cinéma via l'API ou serveur
+
+      // Convertir les champs imbriqués en JSON
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === "screens" || key === "equipments") {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value as any);
+        }
+      });
+
+      await createCinemaAction(formData); // Envoyer les données en action server
       toast.success("Cinéma ajouté avec succès!");
+      revalidatePath("/");
+      revalidatePath("/administrateur/cinemas");
+      router.push("/administrateur/cinemas");
     } catch (error) {
+      console.error(error);
       toast.error("Erreur lors de l'ajout du cinéma.");
     } finally {
       setLoading(false);
@@ -464,7 +477,7 @@ export function CinemaForm() {
                   <FormItem>
                     <FormLabel>Prix</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" step="0.01" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

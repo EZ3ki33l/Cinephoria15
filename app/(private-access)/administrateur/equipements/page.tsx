@@ -44,8 +44,6 @@ export default function EquipementPage() {
     loadEquipments();
   }, []);
 
-  if (equipments.length === 0) return <p>Pas d'équipement</p>;
-
   return (
     <div className="space-y-16">
       <div>

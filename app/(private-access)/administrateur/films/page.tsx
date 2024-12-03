@@ -21,6 +21,7 @@ import Link from "next/link";
 import { Button } from "@/app/_components/_layout/button";
 import { DeleteDropdownItem } from "./_components/deleteDropItems";
 import { getAllMovies } from "./_components/actions";
+import { ActiveToggleDropdownItem } from "./_components/activeToggleDropdownItem";
 
 export default function AdminMoviesPage() {
   const [movies, setMovies] = useState<
@@ -96,11 +97,10 @@ export default function AdminMoviesPage() {
                     <span className="sr-only">Action</span>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/administrateur/films/${movie.id}/edit`}>
-                        Modifier
-                      </Link>
-                    </DropdownMenuItem>
+                    <ActiveToggleDropdownItem
+                      id={movie.id}
+                      lovedByTeam={movie.lovedByTeam ?? false}
+                    />
                     <DeleteDropdownItem id={movie.id} onDelete={handleDelete} />
                   </DropdownMenuContent>
                 </DropdownMenu>

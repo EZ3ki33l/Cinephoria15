@@ -35,7 +35,7 @@ type ManagerWithUser = {
     userName: string | null;
     email: string | null;
     image: string | null;
-    favoriteGenre: Genre | null;
+    genreId: number | null;
   };
 };
 
@@ -60,6 +60,7 @@ export default function ManagerPage() {
             ...manager.User,
             createdAt: manager.User.createdAt.toISOString(),
             updatedAt: manager.User.updatedAt.toISOString(),
+            genreId: manager.User.genreId, // Replace favoriteGenre with genreId
           },
         }));
         setManagers(transformedManagers);
