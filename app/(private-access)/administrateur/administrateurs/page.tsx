@@ -61,6 +61,7 @@ export default function AdminPage() {
             ...admin.User,
             createdAt: admin.User.createdAt.toISOString(),
             updatedAt: admin.User.updatedAt.toISOString(),
+            favoriteGenre: admin.User.favoriteGenre, // Add this line
           },
         }));
         setAdmins(transformedAdmins);

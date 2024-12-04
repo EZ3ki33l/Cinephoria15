@@ -28,6 +28,10 @@ export function Maps2({ cinemas, selectedCinema, onMarkerClick }: Maps2Props) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries: ["places", "marker"],
+    language: "fr", // Langue
+    region: "FR", // Région
+    version: "weekly",
+    mapIds : ["7be8cdcc947285d6"],
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);

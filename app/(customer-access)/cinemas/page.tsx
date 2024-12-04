@@ -19,6 +19,13 @@ import {
 } from "@/components/ui/select";
 import { getAllCinemas } from "@/app/(private-access)/administrateur/cinemas/_components/actions";
 import { Maps2 } from "@/app/_components/_maps copy/maps"; // Ajuste le chemin en fonction de la structure de ton projet
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Typo } from "@/app/_components/_layout/typography";
 
 export interface Cinema {
   id: number;
@@ -30,8 +37,14 @@ export interface Cinema {
     lat: number;
     lng: number;
   };
-  screens: any[]; // Définir le type des écrans plus précisément si possible
-  Equipment: any[]; // Définir le type des équipements plus précisément si possible
+  screens: {
+    id: number;
+    number: number;
+    seats: { id: number; row: number; column: number }[];
+    projectionType?: string;
+    soundSystemType?: string;
+  }[]; // Structure des écrans
+  Equipment: { id: number; name: string }[]; // Structure des équipements
 }
 
 export default function CinemasPage() {
@@ -45,13 +58,28 @@ export default function CinemasPage() {
         const fetchedCinemas = await getAllCinemas();
         const updatedCinemas = fetchedCinemas.map((cinema) => ({
           ...cinema,
-          screens: cinema.Screens.map((screen) => ({
-            ...screen,
-            Seats: screen.Seats.map((seat) => ({
-              ...seat,
-              screenId: screen.id,
-            })),
-          })),
+          screens: Array.isArray(cinema.Screens)
+            ? cinema.Screens.map((screen) => {
+                let seats: { id: number; row: number; column: number }[] = [];
+                if (typeof screen.Seats === "number") {
+                  for (let i = 0; i < screen.Seats; i++) {
+                    seats.push({
+                      id: i + 1,
+                      row: Math.floor(i / 10) + 1,
+                      column: (i % 10) + 1,
+                    });
+                  }
+                } else if (Array.isArray(screen.Seats)) {
+                  seats = screen.Seats;
+                }
+                return {
+                  ...screen,
+                  seats,
+                  projectionType: screen.ProjectionType?.name || "Inconnu",
+                  soundSystemType: screen.SoundSystemType?.name || "Inconnu",
+                };
+              })
+            : [],
         }));
         setCinemas(updatedCinemas);
       } catch (error) {
@@ -74,90 +102,90 @@ export default function CinemasPage() {
   };
 
   return (
-    <div className="my-16">
-      <h1 className="font-h1 max-sm:text-2xl max-md:text-3xl text-5xl mb-5">
-        Nos cinémas :
-      </h1>
-      <div className="grid grid-cols-2">
-        {/* Section gauche */}
-        <div className="col-span-1 relative space-y-10 px-5">
-          <div className="space-y-2">
-            <h2>Selectionnez un cinéma :</h2>
-            <div>
-              {loading ? (
-                <div>Chargement des cinémas...</div>
-              ) : (
-                <div className="w-[50%]">
-                  <Select
-                    value={selectedCinema?.id.toString() || ""}
-                    onValueChange={(value) =>
-                      handleCinemaSelect(parseInt(value))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un cinéma" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cinemas.map((cinema) => (
-                        <SelectItem
-                          key={cinema.id}
-                          value={cinema.id.toString()}
-                        >
-                          {cinema.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="my-16 space-y-10">
+      <Typo variant="h1">Nos cinémas :</Typo>
 
-          {/* Informations sur le cinéma sélectionné */}
+      {/* Sélecteur */}
+      <div className="mb-5 w-[50%]">
+        {loading ? (
+          <div>Chargement des cinémas...</div>
+        ) : (
+          <Select
+            value={selectedCinema?.id.toString() || ""}
+            onValueChange={(value) => handleCinemaSelect(parseInt(value))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionnez un cinéma" />
+            </SelectTrigger>
+            <SelectContent>
+              {cinemas.map((cinema) => (
+                <SelectItem key={cinema.id} value={cinema.id.toString()}>
+                  {cinema.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+
+      {/* Conteneur principal */}
+      <div className="flex w-full gap-5">
+        {/* Section gauche - Card */}
+        <div className="flex-1">
           {selectedCinema && (
-            <Card className="w-[90%] p-10">
+            <Card className="h-full">
               <CardHeader>
                 <CardTitle>
-                  <div className="text-2xl">{selectedCinema.name}</div>
+                  <Typo variant="h3">{selectedCinema.name}</Typo>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex flex-col">
-                  <div className="text-muted-foreground">
-                    <p>{selectedCinema.Address.street}</p>
-                    <p>
-                      {selectedCinema.Address.postalCode}{" "}
-                      {selectedCinema.Address.city}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-y-2">
-                  <h2 className="text-lg font-semibold">Les équipements :</h2>
+              <CardContent>
+                <p>{selectedCinema.Address.street}</p>
+                <p>
+                  {selectedCinema.Address.postalCode}{" "}
+                  {selectedCinema.Address.city}
+                </p>
+                <div>
+                  <h3 className="text-lg font-semibold">Équipements :</h3>
                   {selectedCinema.Equipment.length > 0 ? (
                     <ul className="list-disc ml-5">
-                      {selectedCinema.Equipment.map((equipment: any) => (
-                        <li key={equipment.id} className="text-base">
-                          {equipment.name}
-                        </li>
+                      {selectedCinema.Equipment.map((equipment) => (
+                        <li key={equipment.id}>{equipment.name}</li>
                       ))}
                     </ul>
                   ) : (
-                    <p>Aucun équipement disponible</p>
+                    <Typo variant="body-sm" component="p">
+                      Aucun équipement disponible
+                    </Typo>
                   )}
                 </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Salles :</h3>
+                  {selectedCinema.screens.map((screen) => (
+                    <Accordion key={screen.id} type="single" collapsible>
+                      <AccordionItem value={`screen-${screen.id}`}>
+                        <AccordionTrigger>
+                          Salle {screen.number}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <ul className="list-disc ml-5">
+                            <li>{screen.seats.length} sièges</li>
+                            <li>Projection : {screen.projectionType}</li>
+                            <li>Système audio : {screen.soundSystemType}</li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  ))}
+                </div>
               </CardContent>
-              <CardFooter>
-                <Link href={`/cinemas/${selectedCinema.id}`}>
-                  <Button>Voir les séances</Button>
-                </Link>
-              </CardFooter>
             </Card>
           )}
         </div>
 
         {/* Section droite - Carte */}
-        <div className="m-0">
-          <div className="place-content-center h-full w-full">
+        <div className="flex-1">
+          <div className="h-full">
             <Maps2
               cinemas={cinemas}
               selectedCinema={selectedCinema}
@@ -165,6 +193,16 @@ export default function CinemasPage() {
             />
           </div>
         </div>
+      </div>
+
+      {/* Section pleine largeur */}
+      <div className="w-full">
+        <Typo variant="h1" component="h1">
+          Les films en salle :
+        </Typo>
+        <Typo variant="body-base" component="p">
+          Contenu additionnel ici.
+        </Typo>
       </div>
     </div>
   );
