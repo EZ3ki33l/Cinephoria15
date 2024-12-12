@@ -1,46 +1,88 @@
 "use client";
-import { Button } from "@/app/_components/_layout/button";
+
 import {
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form"; // Assurez-vous d'avoir ces composants correctement configurés
-import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
+  FormControl,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/app/_components/_layout/button";
+import { useFormContext, useWatch } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Genre, User } from "@prisma/client";
+import { UploadDropzone } from "@/utils/uploadthing";
+import { toast } from "sonner";
 
-type ProfileFormProps = {
-  user: {
-    firstName: string;
-    lastName: string;
-    genreId: number;
-  } | null;  // Permettre que user soit null
-  genres: { id: number; name: string }[];
-};
+interface ProfileFormProps {
+  user: User;
+  genres: Genre[];
+  onSubmit: (data: any) => void;
+}
 
-type FormData = {
-  firstName: string;
-  lastName: string;
-  favoriteGenreId: string; // genreId est une string car les valeurs dans <select> sont des chaînes
-};
+export const ProfileForm = ({ user, genres, onSubmit }: ProfileFormProps) => {
+  const {
+    register,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useFormContext();
 
-export const ProfileForm = ({ user, genres }: ProfileFormProps) => {
-  const methods = useForm<FormData>({
-    defaultValues: {
-      firstName: user?.firstName,
-      lastName: user?.lastName,
-      favoriteGenreId: String(user?.genreId), // Convertion de genreId en string pour <select>
-    },
+  // Vérification de l'image récupérée de Prisma et utilisation d'une image par défaut si nécessaire
+  const [initialImageUrl, setInitialImageUrl] = useState(user.image || "/images/user.png");
+  console.log("Image initiale de Prisma :", user.image); // Vérification de l'image
+
+  const newImageUrl = useWatch({
+    name: "newImageUrl",
+    defaultValue: user.image || "",
   });
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
-    // Traitement des données soumises
-    console.log(data);
-    // Vous pouvez envoyer ces données à votre backend pour mettre à jour l'utilisateur
-  };
+  useEffect(() => {
+    // Initialisation des valeurs du formulaire avec setValue
+    if (user) {
+      console.log("Initialisation des valeurs du formulaire pour l'utilisateur : ", user);
+      setValue("userName", user.userName || "");
+      setValue("firstName", user.firstName || "");
+      setValue("lastName", user.lastName || "");
+      setValue("favoriteGenreId", user.genreId?.toString() || "");
+      setValue("newImageUrl", user.image || ""); // Initialisation de l'URL de l'image
+    }
+  }, [user, setValue]);
+
+  useEffect(() => {
+    console.log("Nouvelle image URL : ", newImageUrl); // Vérification de la nouvelle image
+    if (newImageUrl && newImageUrl !== initialImageUrl) {
+      setInitialImageUrl(newImageUrl); // Mettre à jour avec l'image téléchargée
+    }
+  }, [newImageUrl, initialImageUrl]);
 
   return (
-    <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+      {/* Champ Pseudo (Username) */}
+      <FormField
+        name="userName"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Pseudo</FormLabel>
+            <FormControl>
+              <Input
+                {...register("userName", { required: "Le pseudo est requis" })}
+                placeholder="Entrez votre pseudo"
+                defaultValue={user.userName || ""}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+
+      <div className="grid grid-cols-2 gap-x-10">
         {/* Champ Prénom */}
         <FormField
           name="firstName"
@@ -48,7 +90,13 @@ export const ProfileForm = ({ user, genres }: ProfileFormProps) => {
             <FormItem>
               <FormLabel>Prénom</FormLabel>
               <FormControl>
-                <input {...field} className="input" />
+                <Input
+                  {...register("firstName", {
+                    required: "Le prénom est requis",
+                  })}
+                  placeholder="Entrez votre prénom"
+                  defaultValue={user.firstName || ""}
+                />
               </FormControl>
             </FormItem>
           )}
@@ -61,34 +109,92 @@ export const ProfileForm = ({ user, genres }: ProfileFormProps) => {
             <FormItem>
               <FormLabel>Nom</FormLabel>
               <FormControl>
-                <input {...field} className="input" />
+                <Input
+                  {...register("lastName", { required: "Le nom est requis" })}
+                  placeholder="Entrez votre nom"
+                  defaultValue={user.lastName || ""}
+                />
               </FormControl>
             </FormItem>
           )}
         />
+      </div>
 
-        {/* Champ Genre Préféré */}
+      {/* Sélecteur de genre */}
+      <FormField
+        name="favoriteGenreId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Genre préféré</FormLabel>
+            <FormControl>
+              <Select
+                value={field.value || user.genreId?.toString() || ""}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  setValue("favoriteGenreId", value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisissez un genre" />
+                </SelectTrigger>
+                <SelectContent>
+                  {genres.map((genre) => (
+                    <SelectItem key={genre.id} value={genre.id.toString()}>
+                      {genre.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+          </FormItem>
+        )}
+      />
+
+      <div className="grid grid-cols-2 justify-center items-center">
+        {/* Gestion de l'image */}
         <FormField
-          name="favoriteGenreId"
+          name="newImageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Genre préféré</FormLabel>
+              <FormLabel>Photo de profil</FormLabel>
               <FormControl>
-                <select {...field} className="select">
-                  {genres.map((genre) => (
-                    <option key={genre.id} value={String(genre.id)}>
-                      {genre.name}
-                    </option>
-                  ))}
-                </select>
+                <UploadDropzone
+                  appearance={{
+                    button:
+                      "m-5 p-5 ut-ready:bg-primary-light/50 ut-uploading:cursor-not-allowed rounded-lg bg-primary bg-none after:bg-warning/50",
+                    container: "p-5",
+                    allowedContent:
+                      "flex h-8 flex-col items-center justify-center px-2 text-dark",
+                  }}
+                  endpoint="imageUploader"
+                  onClientUploadComplete={(res) => {
+                    const uploadedUrl = res[0]?.url;
+                    setValue("newImageUrl", uploadedUrl); // Mettre à jour l'URL de l'image
+                    toast.success("Téléchargement réussi");
+                  }}
+                  onUploadError={(error: Error) => {
+                    toast.error("Erreur lors du téléchargement : " + error);
+                  }}
+                />
               </FormControl>
             </FormItem>
           )}
         />
 
-        {/* Bouton de soumission */}
-        <Button type="submit">Enregistrer</Button>
-      </form>
-    </FormProvider>
+        {/* Image de prévisualisation */}
+        <img
+          src={newImageUrl || initialImageUrl} // Prioriser l'image téléchargée, sinon l'image initiale
+          alt="Profile"
+          className="w-32 h-32 object-cover rounded-full mx-auto"
+        />
+      </div>
+
+      {/* Bouton d'envoi */}
+      <div>
+        <Button type="submit" className="mt-4">
+          Enregistrer
+        </Button>
+      </div>
+    </form>
   );
 };

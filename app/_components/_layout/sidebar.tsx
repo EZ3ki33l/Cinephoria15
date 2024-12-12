@@ -1,5 +1,7 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+"use client";
 
+import { getUserProfile } from "@/app/(customer-access)/dashboard/_components/actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,10 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { SignOutButton, useUser } from "@clerk/nextjs";
+import { SignOutButton, useAuth } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export const Sidebar = () => {
   return (
@@ -40,11 +42,20 @@ export const Sidebar = () => {
 };
 
 export const AvatarUser = () => {
-  const user = useUser();
+  const { userId } = useAuth();
+  const [userData, setUserData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const userProfile = await getUserProfile(userId as string);
+      setUserData(userProfile);
+    };
+    fetchData();
+  }, []);
 
   return (
     <Avatar className="relative w-8 h-8">
-      <AvatarImage src={user.user?.imageUrl} />
+      <AvatarImage src={userData?.imageUrl} />
       <AvatarFallback>
         <Image
           src="/images/user.png"

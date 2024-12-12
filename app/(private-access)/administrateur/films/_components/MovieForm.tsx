@@ -248,7 +248,7 @@ export function MovieForm() {
                   allowedContent:
                     "flex h-8 flex-col items-center justify-center px-2 text-dark",
                 }}
-                endpoint="imageUploader"
+                endpoint="movieImageUploader"
                 onClientUploadComplete={(res) => {
                   const uploadedUrls = res.map((file) => file.url); // Collecter les URLs des images
                   field.onChange([

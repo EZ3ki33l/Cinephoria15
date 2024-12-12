@@ -1,7 +1,7 @@
 import { createRouteHandler } from "uploadthing/next";
 import { ourFileRouter } from "./core";
 import { UTApi } from "uploadthing/server";
-// Export routes for Next App Router
+
 export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
 });
@@ -9,7 +9,8 @@ export const { GET, POST } = createRouteHandler({
 // DELETE : Supprime un fichier spécifique
 export async function DELETE(request: Request) {
   try {
-    const data = await request.json(); // Récupère les données de la requête
+    const data = await request.json();
+
     if (!data.url) {
       return new Response(JSON.stringify({ error: "URL manquante" }), {
         status: 400,
@@ -17,11 +18,22 @@ export async function DELETE(request: Request) {
     }
 
     // Extraction de l'identifiant du fichier
-    const fileId = data.url.substring(data.url.lastIndexOf("/") + 1);
+    const url = new URL(data.url);
+    const fileId = url.pathname.split("/").pop(); // Extract file ID
+    if (!fileId) {
+      return new Response(
+        JSON.stringify({ error: "Identifiant introuvable" }),
+        {
+          status: 400,
+        }
+      );
+    }
+
     const utapi = new UTApi();
 
-    // Suppression du fichier via Uploadthing
-    await utapi.deleteFiles(fileId);
+    console.log("Tentative de suppression du fichier :", fileId);
+    const result = await utapi.deleteFiles(fileId);
+    console.log("Résultat de suppression :", result);
 
     return new Response(JSON.stringify({ message: "Fichier supprimé" }), {
       status: 200,

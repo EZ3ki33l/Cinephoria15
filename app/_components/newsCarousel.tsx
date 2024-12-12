@@ -55,11 +55,15 @@ export function NewsCarousel() {
       ) : newsData.length > 0 ? (
         <Carousel items={cards} />
       ) : (
-        <div className="flex items-center justify-center">
-          <Typo variant="h4" theme="primary">
-            Chargement ...
-          </Typo>{" "}
-          <Spinner />
+        <div className="flex flex-col items-center justify-center">
+          <div className="my-5">
+            <Typo variant="h4" theme="primary" className="">
+              Chargement ...
+            </Typo>
+          </div>
+          <div>
+            <Spinner className="my-5" />
+          </div>
         </div>
       )}
     </div>

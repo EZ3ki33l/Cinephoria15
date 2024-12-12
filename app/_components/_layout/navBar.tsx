@@ -1,6 +1,12 @@
 "use client";
 
-import { SignIn, SignInButton, SignUpButton, useAuth, useUser } from "@clerk/nextjs";
+import {
+  SignIn,
+  SignInButton,
+  SignUpButton,
+  useAuth,
+  useUser,
+} from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "./logo";
@@ -8,10 +14,20 @@ import { NavbarLinks } from "./navBarLinks";
 import { Sidebar } from "./sidebar";
 import { Typo } from "./typography";
 import { Button } from "./button";
+import { getUserProfile } from "@/app/(customer-access)/dashboard/_components/actions";
 
 export const Navbar = () => {
-  const user = useAuth();
-  const dataUser = useUser();
+  const { isSignedIn, userId } = useAuth();
+  const [userData, setUserData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const userProfile = await getUserProfile(userId as string);
+      setUserData(userProfile);
+    };
+    fetchData();
+  }, []);
+
   const [heure, setHeure] = useState(new Date().getHours());
 
   useEffect(() => {
@@ -23,7 +39,7 @@ export const Navbar = () => {
 
   const salutation = heure < 18 ? "Bonjour" : "Bonsoir";
 
-  if (!user.isSignedIn) {
+  if (!isSignedIn) {
     return (
       <div className="flex justify-between items-center mx-0 border-b py-2 bg-transparent backdrop-blur-md h-[8svh]">
         <Link href="/">
@@ -58,7 +74,7 @@ export const Navbar = () => {
         </div>
         <div className="space-x-2 flex items-center justify-center border px-3 py-2 rounded-full">
           <Typo variant="body-base" component="p" className="hidden md:block">
-            {salutation} {dataUser.user?.firstName} !
+            {salutation} {userData?.userName || userData?.firstName} !
           </Typo>
           <Sidebar />
         </div>
