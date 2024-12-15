@@ -6,7 +6,7 @@ import { Button } from "./button";
 
 export async function Footer() {
   return (
-    <footer className="pt-5 pb-10 px-10 border-t flex flex-col md:flex-row justify-between items-center mt-5">
+    <footer className="pt-5 pb-10 px-10 border-t flex flex-col md:flex-row justify-between items-center">
       <div className="flex flex-col items-center justify-center">
         <RoundedLogo size="medium" />
         <div className="flex flex-col items-center justify-center">

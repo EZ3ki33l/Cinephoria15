@@ -37,15 +37,15 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <Toaster />
-          <Container className="flex flex-col min-h-svh">
-            <header>
-              <Navbar />
-            </header>
+          <header className="max-w-7xl mx-auto">
+            <Navbar />
+          </header>
+          <Container className="flex flex-col min-h-svh relative dark:bg-dot-white/[0.2] bg-dot-black/[0.2]">
             <main>{children}</main>
-            <footer>
-              <Footer />
-            </footer>
           </Container>
+          <footer className="max-w-7xl mx-auto">
+            <Footer />
+          </footer>
         </body>
       </html>
     </ClerkProvider>

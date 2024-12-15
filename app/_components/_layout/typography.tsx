@@ -16,7 +16,7 @@ interface Props {
     | "caption2"
     | "caption3"
     | "caption4";
-  component?: "h1" | "h2" | "h3" | "h4" | "h4" | "p" | "span" | "div";
+  component?: "h1" | "h2" | "h3" | "h4" | "p" | "span" | "div";
   theme?:
     | "gray-dark"
     | "gray"
@@ -30,7 +30,7 @@ interface Props {
     | "danger"
     | "success"
     | "warning";
-  weigth?: "regular" | "medium" | "semibold" | "bold" | "extra-bold";
+  weight?: "regular" | "medium" | "semibold" | "bold" | "extra-bold"; // Correction ici : "weight" au lieu de "weigth"
   className?: string;
   children: React.ReactNode;
 }
@@ -39,13 +39,15 @@ export const Typo = ({
   variant = "body-base",
   component: Component = "div",
   theme = "gray-dark",
-  weigth = "regular",
+  weight = "regular", // Correction ici : "weight" au lieu de "weigth"
   className,
   children,
 }: Props) => {
   let variantStyles: string = "",
-    colorStyles: string = "";
+    colorStyles: string = "",
+    weightStyles: string = "";
 
+  // Définir les styles pour le variant
   switch (variant) {
     case "display":
       variantStyles = "text-8xl";
@@ -91,6 +93,26 @@ export const Typo = ({
       break;
   }
 
+  // Définir les styles de poids de police en fonction du `weight`
+  switch (weight) {
+    case "regular":
+      weightStyles = "font-normal"; // Utilisation de la classe Tailwind existante
+      break;
+    case "medium":
+      weightStyles = "font-medium";
+      break;
+    case "semibold":
+      weightStyles = "font-semibold";
+      break;
+    case "bold":
+      weightStyles = "font-bold";
+      break;
+    case "extra-bold":
+      weightStyles = "font-extrabold";
+      break;
+  }
+
+  // Définir les styles pour le thème (pas encore implémenté dans ce code)
   switch (theme) {
     case "gray-dark":
       colorStyles = "text-gray-dark";
@@ -104,8 +126,20 @@ export const Typo = ({
     case "primary":
       colorStyles = "text-primary";
       break;
+    case "primary-light":
+      colorStyles = "text-primary-light";
+      break;
+    case "primary-dark":
+      colorStyles = "text-primary-dark";
+      break;
     case "secondary":
       colorStyles = "text-secondary";
+      break;
+    case "secondary-light":
+      colorStyles = "text-secondary-light";
+      break;
+    case "secondary-dark":
+      colorStyles = "text-secondary-dark";
       break;
     case "danger":
       colorStyles = "text-danger";
@@ -119,7 +153,9 @@ export const Typo = ({
   }
 
   return (
-    <Component className={clsx(variantStyles, colorStyles, weigth, className)}>
+    <Component
+      className={clsx(variantStyles, colorStyles, weightStyles, className)}
+    >
       {children}
     </Component>
   );

@@ -106,13 +106,19 @@ export async function getAllMovies() {
       lovedByTeam: true,
       genres: {
         select: {
-          name: true,
+          name: true, // Accède au nom du genre
         },
       },
     },
   });
 
-  return movies;
+  // Transformer les films pour inclure un tableau de noms de genres
+  const transformedMovies = movies.map((movie) => ({
+    ...movie,
+    genreNames: movie.genres.map((genre) => genre.name), // Crée un tableau des noms de genres
+  }));
+
+  return transformedMovies;
 }
 
 export async function GetRecentMovies() {
@@ -141,4 +147,28 @@ export async function GetRecentMovies() {
     ...movie,
     genre: movie.genres.map((genre) => genre.name).join(", "),
   }));
+}
+
+export async function GetAMovie(id: number) {
+  const movie = await prisma.movie.findUnique({
+    where: {
+      id: id, // Cherche le film avec l'ID spécifié
+    },
+    include: {
+      genres: {
+        select: {
+          name: true, // Inclut les genres du film
+        },
+      },
+    },
+  });
+
+  if (!movie) {
+    throw new Error("Film non trouvé");
+  }
+
+  return {
+    ...movie,
+    genre: movie.genres.map((genre) => genre.name).join(", "), // Transforme les genres en une chaîne
+  };
 }
