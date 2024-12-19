@@ -22,11 +22,13 @@ export const Navbar = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const userProfile = await getUserProfile(userId as string);
-      setUserData(userProfile);
+      if (isSignedIn && userId) {
+        const userProfile = await getUserProfile(userId);
+        setUserData(userProfile);
+      }
     };
     fetchData();
-  }, []);
+  }, [isSignedIn, userId]);
 
   const [heure, setHeure] = useState(new Date().getHours());
 

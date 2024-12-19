@@ -202,13 +202,11 @@ model Booking {
 }
 
 model Ticket {
-  id   Int    @id @default(autoincrement())
-  uid  String
-  User User   @relation(fields: [uid], references: [id])
-
-  qrCode String?
-
-  Bookings Booking[]
+  id       Int       @id @default(autoincrement())
+  uid      String
+  User     User      @relation(fields: [uid], references: [id])
+  qrCode   String?
+  Booking  Booking[]
 }
 
 model Genre {
@@ -252,4 +250,15 @@ model Like {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model TemporarySelection {
+  id         Int      @id @default(autoincrement())
+  showtimeId Int
+  seats      String[]
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([showtimeId])
+  @@index([expiresAt])
 }

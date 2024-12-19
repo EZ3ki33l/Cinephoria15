@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScreenVisualizer } from "@/app/_components/seatVisualizer";
+import { AdminScreenVisualizer } from "@/app/_components/AdminSeatVisualizer";
 import { toast } from "sonner";
 import { revalidatePath } from "@/hooks/revalidePath";
 import { useRouter } from "next/navigation";
@@ -485,10 +485,9 @@ export function CinemaForm() {
               />
             </div>
 
-            <ScreenVisualizer
+            <AdminScreenVisualizer
               rows={form.watch(`screens.${index}.rows`)}
               columns={form.watch(`screens.${index}.columns`)}
-              handicapSeats={4}
             />
 
             <Button variant="danger" onClick={() => remove(index)}>

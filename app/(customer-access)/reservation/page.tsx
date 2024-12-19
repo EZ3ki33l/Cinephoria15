@@ -27,6 +27,7 @@ import { Button } from "@/app/_components/_layout/button";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "framer-motion";
 import { SeatSelectionModal } from "./_components/SeatSelectionModal";
+import { useAuth } from "@clerk/nextjs";
 
 interface Cinema {
   id: number;
@@ -115,8 +116,14 @@ export default function ShowtimePage() {
   const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
   const [selectedShowtimeDetails, setSelectedShowtimeDetails] = useState<{
     id: number;
-    screen: { number: number };
+    screen: { 
+      id: number;
+      number: number 
+    };
   } | null>(null);
+  const { userId } = useAuth();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalStep, setModalStep] = useState<'selection' | 'payment' | 'confirmation' | 'error'>('selection');
 
   useEffect(() => {
     const fetchCinemas = async () => {
@@ -157,6 +164,22 @@ export default function ShowtimePage() {
 
     fetchShowtimes();
   }, [selectedCinema, date]);
+
+  const handleSeatSelection = (seatIds: string[]) => {
+    if (!userId) {
+      return;
+    }
+    
+    console.log("Sièges sélectionnés:", seatIds);
+    setIsSeatModalOpen(false);
+    
+    // Logique de réservation ici
+  };
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+    setModalStep('selection');
+  };
 
   if (loading) {
     return (
@@ -329,8 +352,14 @@ export default function ShowtimePage() {
                                     className="mt-2 w-full"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setSelectedShowtimeDetails(showtime);
-                                      setIsSeatModalOpen(true);
+                                      setSelectedShowtimeDetails({
+                                        id: showtime.id,
+                                        screen: {
+                                          id: showtime.screen.id,
+                                          number: showtime.screen.number
+                                        }
+                                      });
+                                      handleOpenModal();
                                     }}
                                   >
                                     Choisir mon siège
@@ -350,13 +379,20 @@ export default function ShowtimePage() {
       </div>
       {selectedShowtimeDetails && (
         <SeatSelectionModal
-          isOpen={isSeatModalOpen}
-          onClose={() => setIsSeatModalOpen(false)}
-          showtime={selectedShowtimeDetails}
-          onSeatSelect={(seatId) => {
-            console.log("Siège sélectionné:", seatId);
-            setIsSeatModalOpen(false);
+          isOpen={modalOpen}
+          onClose={() => {
+            if (modalStep === 'confirmation') {
+              setModalOpen(false);
+              setModalStep('selection');
+            } else if (modalStep === 'selection') {
+              setModalOpen(false);
+            }
           }}
+          showtime={selectedShowtimeDetails}
+          onSeatSelect={handleSeatSelection}
+          bookedSeats={[]}
+          onStepChange={setModalStep}
+          currentStep={modalStep}
         />
       )}
     </div>

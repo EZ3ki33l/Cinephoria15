@@ -1,0 +1,7 @@
+.cl-modal {
+  z-index: 1000 !important;
+}
+
+.cl-backdrop {
+  z-index: 999 !important;
+} 

@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/db/db";
-import { Cinema } from "@prisma/client";
 
 export async function getAllEquipments() {
   try {
@@ -61,6 +60,17 @@ type ScreenInput = {
 type EquipmentInput = {
   id: number;
 };
+
+function calculateHandicapSeats(totalSeats: number): number {
+  const percentage = totalSeats >= 200 ? 0.08 : 0.05;
+  const handicapSeats = Math.ceil(totalSeats * percentage);
+  return Math.max(handicapSeats, 4);
+}
+
+function isHandicapSeat(row: number, column: number, columns: number, seatsPerSide: number): boolean {
+  return (row === 0 || row === 1) && 
+         (column <= seatsPerSide || column > columns - seatsPerSide);
+}
 
 export async function createCinemaAction(formData: FormData) {
   try {
@@ -149,21 +159,33 @@ export async function createCinemaAction(formData: FormData) {
           })),
         },
         Screens: {
-          create: screensWithIds.map((screen: any) => ({
-            number: screen.number,
-            price: parseFloat(screen.price),
-            projectionTypeId: screen.projectionTypeId,
-            soundSystemTypeId: screen.soundSystemTypeId,
-            Seats: {
-              create: Array.from(
-                { length: screen.rows * screen.columns },
-                (_, index) => ({
-                  row: Math.floor(index / screen.columns) + 1, // Calcul des rangées
-                  column: (index % screen.columns) + 1, // Calcul des colonnes
-                })
-              ),
-            },
-          })),
+          create: screensWithIds.map((screen: any) => {
+            const totalSeats = screen.rows * screen.columns;
+            const handicapSeatsCount = calculateHandicapSeats(totalSeats);
+            const seatsPerSide = Math.ceil(handicapSeatsCount / 4);
+
+            return {
+              number: screen.number,
+              price: parseFloat(screen.price),
+              projectionTypeId: screen.projectionTypeId,
+              soundSystemTypeId: screen.soundSystemTypeId,
+              Seats: {
+                create: Array.from(
+                  { length: screen.rows * screen.columns },
+                  (_, index) => {
+                    const row = Math.floor(index / screen.columns);
+                    const column = (index % screen.columns) + 1;
+                    
+                    return {
+                      row: row + 1,
+                      column: column,
+                      isHandicap: isHandicapSeat(row, column, screen.columns, seatsPerSide)
+                    };
+                  }
+                ),
+              },
+            };
+          }),
         },
       },
     });

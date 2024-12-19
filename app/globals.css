@@ -90,3 +90,25 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Clerk Modal Styles */
+.cl-modalBackdrop {
+  z-index: 9999 !important;
+}
+
+.cl-modal {
+  z-index: 10000 !important;
+}
+
+.cl-card {
+  z-index: 10001 !important;
+}
+
+/* Empêcher les interactions avec les éléments en dessous */
+.cl-modalBackdrop::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  pointer-events: all;
+}
