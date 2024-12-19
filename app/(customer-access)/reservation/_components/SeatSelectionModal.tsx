@@ -237,19 +237,8 @@ export function SeatSelectionModal({
             row: dbSeat.row,
             column: dbSeat.column,
             identifier: `${String.fromCharCode(64 + dbSeat.row)}${dbSeat.column}`,
-            isHandicap: dbSeat.isHandicap,
-            id: dbSeat.id
+            isHandicap: dbSeat.isHandicap
           });
-
-          // Log pour déboguer les sièges PMR
-          if (dbSeat.isHandicap) {
-            console.log('Siège PMR trouvé:', {
-              id: dbSeat.id,
-              row: dbSeat.row,
-              column: dbSeat.column,
-              identifier: `${String.fromCharCode(64 + dbSeat.row)}${dbSeat.column}`
-            });
-          }
         }
       }
     }
@@ -261,11 +250,15 @@ export function SeatSelectionModal({
   const handleSeatSelect = async (seat: { identifier: string; isHandicap: boolean }) => {
     if (showLoginDialog) return;
 
-    // Vérifier si le siège est déjà réservé temporairement
-    if (temporaryBookedSeats.includes(seat.identifier) && !selectedSeats.includes(seat.identifier)) {
-      return; // Ne rien faire si le siège est réservé par quelqu'un d'autre
+    // Vérifier si le siège est déjà réservé par un autre utilisateur
+    const isReservedByOthers = temporaryBookedSeats.includes(seat.identifier) && 
+      !selectedSeats.includes(seat.identifier);
+
+    // Ne rien faire si le siège est réservé par quelqu'un d'autre
+    if (isReservedByOthers) {
+      return;
     }
-    
+
     // Gestion des sièges PMR
     if (seat.isHandicap) {
       setShowHandicapWarning(true);
@@ -677,12 +670,16 @@ export function SeatSelectionModal({
     const interval = setInterval(async () => {
       const result = await getSelectedSeats(showtime.id);
       if (result.success) {
-        setTemporaryBookedSeats(result.seats);
+        // Filtrer pour exclure nos propres sélections des sièges temporairement réservés
+        const otherBookedSeats = result.seats.filter(
+          seatId => !selectedSeats.includes(seatId)
+        );
+        setTemporaryBookedSeats(otherBookedSeats);
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [showtime.id]);
+  }, [showtime.id, selectedSeats]);
 
   const handleClose = () => {
     if (currentStep === 'confirmation') {
