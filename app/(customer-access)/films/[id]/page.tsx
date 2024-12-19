@@ -67,9 +67,10 @@ export default function MoviePage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 min-h-screen">
       <div className="flex flex-col">
-        <AuroraBackground className="h-[15svh]">
+        <AuroraBackground className="h-[20svh] relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/20 to-purple-500/20 mix-blend-overlay" />
           <motion.div
             initial={{ opacity: 0.0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -80,30 +81,19 @@ export default function MoviePage() {
             }}
             className="relative flex flex-col gap-4 items-center justify-center px-4"
           >
-            <Typo className="font-bold text-xl md:text-6xl text-center bg-clip-text text-transparent bg-gradient-to-b from-primary to-secondary py-4">
+            <Typo className="font-bold text-xl md:text-6xl text-center py-4">
               {movie.title}
             </Typo>
           </motion.div>
         </AuroraBackground>
+
         <ImagesSlider className="h-[60svh] w-full" images={movie.images}>
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: -80,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.6,
-            }}
-            className="z-50 flex flex-col justify-center items-center"
-          ></motion.div>
+          <div className="absolute inset-0" />
         </ImagesSlider>
       </div>
-      <div className="grid grid-cols-2 p-10 items-center">
-        <div className="col-span-1 pr-10">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 p-10 items-start gap-10 relative">
+        <div className="col-span-1 pr-10 space-y-4 p-6 rounded-lg">
           <div className="flex gap-3 items-end">
             <Typo theme="primary" variant="body-lg">
               Réalisateur :
@@ -148,22 +138,31 @@ export default function MoviePage() {
             {movie.summary}
           </Typo>
           <Link href={"#"} className="flex justify-center my-10">
-            <Button size={"large"}>Réserver</Button>
+            <Button
+              size={"large"}
+              className="text-white transition-all duration-300 hover:scale-105"
+            >
+              Réserver
+            </Button>
           </Link>
         </div>
+
         <div className="col-span-1">
           {movie.trailer && (
-            <iframe
-              width="100%"
-              height="400"
-              src={`https://www.youtube.com/embed/${
-                movie.trailer.split("v=")[1]
-              }`}
-              title={`trailer de ${movie.title}`}
-              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded-2xl"
-            ></iframe>
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-secondary to-primary rounded-2xl blur-sm opacity-75" />
+              <iframe
+                width="100%"
+                height="400"
+                src={`https://www.youtube.com/embed/${
+                  movie.trailer.split("v=")[1]
+                }`}
+                title={`trailer de ${movie.title}`}
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="relative rounded-2xl"
+              />
+            </div>
           )}
         </div>
       </div>

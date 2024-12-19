@@ -78,7 +78,7 @@ const config: Config = {
         "border-spin": {
           "100%": { transform: "rotate(-360deg)" },
         },
-        "aurora": {
+        aurora: {
           from: {
             backgroundPosition: "50% 50%, 50% 50%",
           },
@@ -86,12 +86,19 @@ const config: Config = {
             backgroundPosition: "350% 50%, 350% 50%",
           },
         },
+        scroll: {
+          to: {
+            transform: "translate(calc(-50% - 0.5rem))",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "border-spin": "border-spin 7s linear infinite",
-        "aurora" : "aurora 60s linear infinite",
+        aurora: "aurora 60s linear infinite",
+        scroll:
+          "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
       },
       fontFamily: {
         h1: ["Pattaya"],
