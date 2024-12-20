@@ -5,6 +5,8 @@ import { revalidatePath } from "@/hooks/revalidePath";
 import { stripe } from "@/lib/stripe";
 import { auth } from "@clerk/nextjs/server";
 import QRCode from "qrcode";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface ShowtimeWithDetails {
   id: number;
@@ -170,6 +172,7 @@ export async function createCheckoutSession({
     return {
       success: true,
       clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
     };
   } catch (error) {
     console.error("Erreur Stripe:", error);
@@ -185,6 +188,7 @@ export async function createBooking(data: {
   seats: string[];
   totalAmount: number;
   discounts: { seatId: string; type: string }[];
+  paymentIntentId?: string;
 }) {
   try {
     const authData = await auth();
@@ -195,18 +199,23 @@ export async function createBooking(data: {
     // Récupérer la séance avec l'écran
     const showtime = await prisma.showtime.findUnique({
       where: { id: data.showtimeId },
-      include: { Screen: true }
+      include: {
+        Screen: {
+          include: {
+            Cinema: {
+              include: {
+                Address: true
+              }
+            }
+          }
+        },
+        Movie: true
+      }
     });
 
     if (!showtime) {
       return { success: false, error: "Séance introuvable" };
     }
-
-    console.log('Debug - Données initiales:', {
-      showtimeId: data.showtimeId,
-      screenId: showtime.screenId,
-      requestedSeats: data.seats
-    });
 
     // Vérifier que les sièges existent
     const foundSeats = await Promise.all(
@@ -221,16 +230,8 @@ export async function createBooking(data: {
           where: {
             screenId: showtime.screenId,
             row: row,
-            column: column
-          }
-        });
-
-        console.log('Recherche siège:', {
-          seatId,
-          row,
-          column,
-          found: seat ? true : false,
-          seatDetails: seat
+            column: column,
+          },
         });
 
         return seat;
@@ -238,28 +239,12 @@ export async function createBooking(data: {
     );
 
     // Filtrer les sièges null et vérifier que tous les sièges ont été trouvés
-    const seats = foundSeats.filter((seat): seat is NonNullable<typeof seat> => seat !== null);
+    const seats = foundSeats.filter(
+      (seat): seat is NonNullable<typeof seat> => seat !== null
+    );
 
     if (seats.length !== data.seats.length) {
-      const foundIds = seats.map(s => `${String.fromCharCode(65 + s.row)}${s.column}`);
-      const missingSeats = data.seats.filter(id => !foundIds.includes(id));
-
-      console.log('Erreur sièges:', {
-        requested: data.seats,
-        found: foundIds,
-        missing: missingSeats,
-        screenId: showtime.screenId
-      });
-
-      return { 
-        success: false, 
-        error: "Certains sièges n'existent pas",
-        debug: {
-          requested: data.seats,
-          found: foundIds,
-          missing: missingSeats
-        }
-      };
+      return { success: false, error: "Certains sièges n'existent pas" };
     }
 
     // Vérifier les réservations existantes
@@ -267,39 +252,60 @@ export async function createBooking(data: {
       where: {
         showtimeId: data.showtimeId,
         seatId: {
-          in: seats.map(seat => seat.id)
-        }
-      }
+          in: seats.map((seat) => seat.id),
+        },
+      },
     });
 
     if (existingBookings.length > 0) {
       return { success: false, error: "Certains sièges sont déjà réservés" };
     }
 
-    // Créer le ticket et les réservations
+    // Extraire l'ID du paiement (enlever la partie _secret_)
+    const cleanPaymentIntentId = data.paymentIntentId?.split('_secret_')[0];
+
     const result = await prisma.$transaction(async (tx) => {
       const ticket = await tx.ticket.create({
         data: {
           uid: authData.userId,
-          qrCode: await QRCode.toDataURL(JSON.stringify({
-            showtimeId: data.showtimeId,
-            seats: data.seats,
-            timestamp: new Date().toISOString(),
-          }))
-        }
+          paymentIntentId: cleanPaymentIntentId,
+          qrCode: await QRCode.toDataURL(
+            JSON.stringify({
+              cinema: {
+                name: showtime.Screen.Cinema.name,
+                city: showtime.Screen.Cinema.Address.city,
+              },
+              screen: {
+                number: showtime.Screen.number,
+              },
+              movie: {
+                title: showtime.Movie.title,
+              },
+              showtime: {
+                id: showtime.id,
+                startTime: format(new Date(showtime.startTime), "d MMMM yyyy 'à' HH:mm", {
+                  locale: fr,
+                }),
+              },
+              seats: seats.map(seat => ({
+                id: seat.id,
+                label: `${String.fromCharCode(64 + seat.row)}${seat.column}`
+              })),
+            })
+          ),
+        },
       });
 
       const bookings = await Promise.all(
         seats.map(async (seat) => {
-          const seatId = `${String.fromCharCode(65 + seat.row)}${seat.column}`;
           return tx.booking.create({
             data: {
               userId: authData.userId,
               showtimeId: data.showtimeId,
               seatId: seat.id,
-              pricePaid: calculateSeatPrice(seatId, data.discounts),
-              ticketId: ticket.id
-            }
+              pricePaid: calculateSeatPrice(seat.id.toString(), data.discounts),
+              ticketId: ticket.id,
+            },
           });
         })
       );
@@ -307,9 +313,16 @@ export async function createBooking(data: {
       return { ticket, bookings };
     });
 
+    console.log("Données de réservation avant création :", {
+      showtimeId: data.showtimeId,
+      seats: data.seats,
+      totalAmount: data.totalAmount,
+      discounts: data.discounts,
+    });
+
     return { success: true, data: result };
   } catch (error) {
-    console.error('Debug - Erreur complète:', error);
+    console.error("Debug - Erreur complète:", error);
     if (error instanceof Error) {
       return { success: false, error: error.message };
     }
@@ -317,7 +330,10 @@ export async function createBooking(data: {
   }
 }
 
-function calculateSeatPrice(seatId: string, discounts: { seatId: string; type: string }[]) {
+function calculateSeatPrice(
+  seatId: string,
+  discounts: { seatId: string; type: string }[]
+) {
   const BASE_PRICE = 19;
   const DISCOUNT_AMOUNTS = {
     none: 0,
@@ -326,9 +342,12 @@ function calculateSeatPrice(seatId: string, discounts: { seatId: string; type: s
     handicap: 4,
     under12: 6,
   };
-  
-  const discount = discounts.find(d => d.seatId === seatId);
-  return BASE_PRICE - (DISCOUNT_AMOUNTS[discount?.type as keyof typeof DISCOUNT_AMOUNTS] || 0);
+
+  const discount = discounts.find((d) => d.seatId === seatId);
+  return (
+    BASE_PRICE -
+    (DISCOUNT_AMOUNTS[discount?.type as keyof typeof DISCOUNT_AMOUNTS] || 0)
+  );
 }
 
 export async function notifySelectedSeats(showtimeId: number, seats: string[]) {
@@ -338,9 +357,9 @@ export async function notifySelectedSeats(showtimeId: number, seats: string[]) {
       where: {
         showtimeId,
         createdAt: {
-          lt: new Date(Date.now() - 5 * 60 * 1000)
-        }
-      }
+          lt: new Date(Date.now() - 5 * 60 * 1000),
+        },
+      },
     });
 
     // Créer la nouvelle sélection
@@ -348,14 +367,14 @@ export async function notifySelectedSeats(showtimeId: number, seats: string[]) {
       data: {
         showtimeId,
         seats,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
-      }
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      },
     });
 
-    revalidatePath('/reservation');
+    revalidatePath("/reservation");
     return { success: true };
   } catch (error) {
-    console.error('Erreur lors de la notification des sièges:', error);
+    console.error("Erreur lors de la notification des sièges:", error);
     return { success: false };
   }
 }
@@ -366,40 +385,41 @@ export async function getSelectedSeats(showtimeId: number) {
     await prisma.temporarySelection.deleteMany({
       where: {
         expiresAt: {
-          lt: new Date()
-        }
-      }
+          lt: new Date(),
+        },
+      },
     });
 
     // 1. Récupérer les sièges temporairement sélectionnés
     const temporarySelections = await prisma.temporarySelection.findMany({
       where: {
-        showtimeId
-      }
+        showtimeId,
+      },
     });
 
     // 2. Récupérer les sièges déjà réservés
     const bookedSeats = await prisma.booking.findMany({
       where: {
-        showtimeId
+        showtimeId,
       },
       include: {
-        Seat: true
-      }
+        Seat: true,
+      },
     });
 
     // Combiner les sièges temporaires et réservés
-    const temporarySeats = temporarySelections.flatMap(s => s.seats);
-    const reservedSeats = bookedSeats.map(booking => 
-      `${String.fromCharCode(65 + booking.Seat.row)}${booking.Seat.column}`
+    const temporarySeats = temporarySelections.flatMap((s) => s.seats);
+    const reservedSeats = bookedSeats.map(
+      (booking) =>
+        `${String.fromCharCode(65 + booking.Seat.row)}${booking.Seat.column}`
     );
 
-    return { 
-      success: true, 
-      seats: [...new Set([...temporarySeats, ...reservedSeats])] 
+    return {
+      success: true,
+      seats: [...new Set([...temporarySeats, ...reservedSeats])],
     };
   } catch (error) {
-    console.error('Erreur lors de la récupération des sièges:', error);
+    console.error("Erreur lors de la récupération des sièges:", error);
     return { success: false, seats: [] };
   }
 }
@@ -408,17 +428,14 @@ export async function getScreenConfiguration(screenId: number) {
   try {
     const seats = await prisma.seat.findMany({
       where: {
-        screenId: screenId
+        screenId: screenId,
       },
-      orderBy: [
-        { row: 'asc' },
-        { column: 'asc' }
-      ]
+      orderBy: [{ row: "asc" }, { column: "asc" }],
     });
 
     // Calculer les dimensions de la salle
-    const maxRow = Math.max(...seats.map(s => s.row));
-    const maxColumn = Math.max(...seats.map(s => s.column));
+    const maxRow = Math.max(...seats.map((s) => s.row));
+    const maxColumn = Math.max(...seats.map((s) => s.column));
 
     return {
       success: true,
@@ -426,12 +443,15 @@ export async function getScreenConfiguration(screenId: number) {
         seats: seats,
         dimensions: {
           rows: maxRow,
-          columns: maxColumn
-        }
-      }
+          columns: maxColumn,
+        },
+      },
     };
   } catch (error) {
-    console.error('Erreur lors de la récupération de la configuration:', error);
-    return { success: false, error: "Impossible de récupérer la configuration de la salle" };
+    console.error("Erreur lors de la récupération de la configuration:", error);
+    return {
+      success: false,
+      error: "Impossible de récupérer la configuration de la salle",
+    };
   }
-} 
+}

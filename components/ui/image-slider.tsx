@@ -2,6 +2,7 @@
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const ImagesSlider = ({
   images,
@@ -10,7 +11,7 @@ export const ImagesSlider = ({
   overlayClassName,
   className,
   autoplay = true,
-  direction = "up",
+  showControls = true,
 }: {
   images: string[];
   children: React.ReactNode;
@@ -19,21 +20,30 @@ export const ImagesSlider = ({
   className?: string;
   autoplay?: boolean;
   direction?: "up" | "down";
+  showControls?: boolean;
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
+  const [direction, setDirection] = useState(0);
 
   const handleNext = () => {
+    setDirection(1);
     setCurrentIndex((prevIndex) =>
       prevIndex + 1 === images.length ? 0 : prevIndex + 1
     );
   };
 
   const handlePrevious = () => {
+    setDirection(-1);
     setCurrentIndex((prevIndex) =>
       prevIndex - 1 < 0 ? images.length - 1 : prevIndex - 1
     );
+  };
+
+  const handleDotClick = (index: number) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
   };
 
   useEffect(() => {
@@ -84,34 +94,32 @@ export const ImagesSlider = ({
   }, []);
 
   const slideVariants = {
-    initial: {
-      scale: 0,
+    initial: (direction: number) => ({
+      scale: 0.8,
       opacity: 0,
-      rotateX: 45,
-    },
+      x: direction > 0 ? 100 : -100,
+      rotateY: direction > 0 ? 30 : -30,
+    }),
     visible: {
       scale: 1,
-      rotateX: 0,
       opacity: 1,
+      x: 0,
+      rotateY: 0,
       transition: {
-        duration: 0.5,
-        ease: [0.645, 0.045, 0.355, 1.0],
+        duration: 0.6,
+        ease: [0.33, 1, 0.68, 1],
       },
     },
-    upExit: {
-      opacity: 1,
-      y: "-150%",
+    exit: (direction: number) => ({
+      scale: 0.8,
+      opacity: 0,
+      x: direction < 0 ? 100 : -100,
+      rotateY: direction < 0 ? -30 : 30,
       transition: {
-        duration: 1,
+        duration: 0.4,
+        ease: [0.33, 1, 0.68, 1],
       },
-    },
-    downExit: {
-      opacity: 1,
-      y: "150%",
-      transition: {
-        duration: 1,
-      },
-    },
+    }),
   };
 
   const areImagesLoaded = loadedImages.length > 0;
@@ -123,7 +131,7 @@ export const ImagesSlider = ({
         className
       )}
       style={{
-        perspective: "1000px",
+        perspective: "1500px",
       }}
     >
       {areImagesLoaded && children}
@@ -133,16 +141,57 @@ export const ImagesSlider = ({
         />
       )}
 
+      {showControls && areImagesLoaded && (
+        <>
+          <button
+            onClick={handlePrevious}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-black/30 hover:bg-black/50 transition-colors rounded-full p-2 text-white"
+            aria-label="Image précédente"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button
+            onClick={handleNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-black/30 hover:bg-black/50 transition-colors rounded-full p-2 text-white"
+            aria-label="Image suivante"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => handleDotClick(index)}
+                className="group"
+                aria-label={`Aller à l'image ${index + 1}`}
+              >
+                <div
+                  className={cn(
+                    "h-1.5 rounded-full bg-white/50 transition-all duration-300 group-hover:bg-white/100",
+                    currentIndex === index ? "w-6 bg-white" : "w-2"
+                  )}
+                />
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
       {areImagesLoaded && (
-        <AnimatePresence>
+        <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.img
             key={currentIndex}
             src={loadedImages[currentIndex]}
+            custom={direction}
+            variants={slideVariants}
             initial="initial"
             animate="visible"
-            exit={direction === "up" ? "upExit" : "downExit"}
-            variants={slideVariants}
-            className="image h-full w-full absolute inset-0 object-contain object-center"
+            exit="exit"
+            className="image h-full w-full absolute inset-0 object-contain"
+            style={{
+              backfaceVisibility: "hidden",
+            }}
           />
         </AnimatePresence>
       )}

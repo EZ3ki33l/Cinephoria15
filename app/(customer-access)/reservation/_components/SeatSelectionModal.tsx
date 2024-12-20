@@ -28,10 +28,15 @@ import {
 import { getStripe } from "@/app/config/stripe";
 import { TouchScrollContainer } from "@/app/_components/TouchScrollContainer";
 import { RoundedLogo } from "@/app/_components/_layout/logo";
-import ReactConfetti from 'react-confetti';
-import { useWindowSize } from 'react-use';
-import { createBooking, createCheckoutSession, getSelectedSeats, notifySelectedSeats, getScreenConfiguration } from "./action";
-
+import ReactConfetti from "react-confetti";
+import { useWindowSize } from "react-use";
+import {
+  createBooking,
+  createCheckoutSession,
+  getSelectedSeats,
+  notifySelectedSeats,
+  getScreenConfiguration,
+} from "./action";
 
 interface SeatSelectionModalProps {
   isOpen: boolean;
@@ -149,7 +154,7 @@ function CheckoutForm({
   );
 }
 
-type Step = 'selection' | 'payment' | 'confirmation' | 'error';
+type Step = "selection" | "payment" | "confirmation" | "error";
 
 export function SeatSelectionModal({
   isOpen,
@@ -174,7 +179,9 @@ export function SeatSelectionModal({
   >("idle");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const { width, height } = useWindowSize();
-  const [temporaryBookedSeats, setTemporaryBookedSeats] = useState<string[]>([]);
+  const [temporaryBookedSeats, setTemporaryBookedSeats] = useState<string[]>(
+    []
+  );
   const [confirmationData, setConfirmationData] = useState<{
     seats: string[];
     total: number;
@@ -230,14 +237,22 @@ export function SeatSelectionModal({
 
     const seats = [];
     for (let row = 1; row <= screenConfig.dimensions.rows; row++) {
-      for (let column = 1; column <= screenConfig.dimensions.columns; column++) {
-        const dbSeat = screenConfig.seats.find(s => s.row === row && s.column === column);
+      for (
+        let column = 1;
+        column <= screenConfig.dimensions.columns;
+        column++
+      ) {
+        const dbSeat = screenConfig.seats.find(
+          (s) => s.row === row && s.column === column
+        );
         if (dbSeat) {
           seats.push({
             row: dbSeat.row,
             column: dbSeat.column,
-            identifier: `${String.fromCharCode(64 + dbSeat.row)}${dbSeat.column}`,
-            isHandicap: dbSeat.isHandicap
+            identifier: `${String.fromCharCode(64 + dbSeat.row)}${
+              dbSeat.column
+            }`,
+            isHandicap: dbSeat.isHandicap,
           });
         }
       }
@@ -247,11 +262,15 @@ export function SeatSelectionModal({
 
   const seats = generateSeats();
 
-  const handleSeatSelect = async (seat: { identifier: string; isHandicap: boolean }) => {
+  const handleSeatSelect = async (seat: {
+    identifier: string;
+    isHandicap: boolean;
+  }) => {
     if (showLoginDialog) return;
 
     // Vérifier si le siège est déjà réservé par un autre utilisateur
-    const isReservedByOthers = temporaryBookedSeats.includes(seat.identifier) && 
+    const isReservedByOthers =
+      temporaryBookedSeats.includes(seat.identifier) &&
       !selectedSeats.includes(seat.identifier);
 
     // Ne rien faire si le siège est réservé par quelqu'un d'autre
@@ -266,18 +285,20 @@ export function SeatSelectionModal({
 
     // Mise à jour des sièges sélectionnés
     const newSelectedSeats = selectedSeats.includes(seat.identifier)
-      ? selectedSeats.filter(id => id !== seat.identifier)
+      ? selectedSeats.filter((id) => id !== seat.identifier)
       : [...selectedSeats, seat.identifier];
 
     setSelectedSeats(newSelectedSeats);
 
     // Gestion des réductions PMR
     setSeatDiscounts((prevDiscounts) => {
-      const newDiscounts = prevDiscounts.filter(d => d.seatId !== seat.identifier);
+      const newDiscounts = prevDiscounts.filter(
+        (d) => d.seatId !== seat.identifier
+      );
       if (!selectedSeats.includes(seat.identifier) && seat.isHandicap) {
         newDiscounts.push({
           seatId: seat.identifier,
-          type: "handicap"
+          type: "handicap",
         });
       }
       return newDiscounts;
@@ -285,8 +306,8 @@ export function SeatSelectionModal({
 
     // Désactiver l'avertissement PMR si nécessaire
     if (selectedSeats.includes(seat.identifier) && seat.isHandicap) {
-      const remainingPMRSeats = newSelectedSeats.filter(id => 
-        seats.find(s => s.identifier === id && s.isHandicap)
+      const remainingPMRSeats = newSelectedSeats.filter((id) =>
+        seats.find((s) => s.identifier === id && s.isHandicap)
       );
       if (remainingPMRSeats.length === 0) {
         setShowHandicapWarning(false);
@@ -323,8 +344,8 @@ export function SeatSelectionModal({
 
   // Ajouter une fonction pour vérifier si des réductions sont appliquées
   const hasDiscounts = () => {
-    return seatDiscounts.some((discount) => 
-      discount.type !== "none" && discount.type !== "handicap"
+    return seatDiscounts.some(
+      (discount) => discount.type !== "none" && discount.type !== "handicap"
     );
   };
 
@@ -408,7 +429,7 @@ export function SeatSelectionModal({
     }
 
     setClientSecret(result.clientSecret);
-    onStepChange('payment');
+    onStepChange("payment");
   };
 
   const handlePaymentSuccess = async () => {
@@ -417,19 +438,20 @@ export function SeatSelectionModal({
         showtimeId: showtime.id,
         seats: selectedSeats,
         totalAmount: calculateTotal(),
-        discounts: seatDiscounts.filter(d => d.type !== 'none')
+        discounts: seatDiscounts.filter((d) => d.type !== "none"),
+        paymentIntentId: clientSecret ?? undefined,
       };
 
       const bookingResult = await createBooking(bookingData);
       if (!bookingResult) {
-        throw new Error('Pas de réponse du serveur');
+        throw new Error("Pas de réponse du serveur");
       }
 
       if (bookingResult.success) {
         // Sauvegarder les données pour la confirmation
         setConfirmationData({
           seats: selectedSeats,
-          total: calculateTotal()
+          total: calculateTotal(),
         });
 
         // Mettre à jour les sièges réservés
@@ -438,50 +460,65 @@ export function SeatSelectionModal({
         }
 
         // Changer l'étape immédiatement
-        onStepChange('confirmation');
+        onStepChange("confirmation");
         setShowConfetti(true);
       } else {
-        throw new Error(bookingResult.error || 'Erreur inconnue');
+        throw new Error(bookingResult.error || "Erreur inconnue");
       }
     } catch (error: any) {
-      console.error('Erreur lors de la création de la réservation:', error?.message || error);
-      onStepChange('error');
+      console.error(
+        "Erreur lors de la création de la réservation:",
+        error?.message || error
+      );
+      onStepChange("error");
+    }
+  };
+
+  const getStepCount = () => {
+    return 2; // Nombre total d'étapes (sélection, paiement)
+  };
+
+  const getCurrentStepIndex = () => {
+    switch (currentStep) {
+      case "selection":
+        return 1;
+      case "payment":
+        return 2;
+      case "confirmation":
+        return 0; // Ne pas compter comme une étape à part enti��re
+      default:
+        return 0;
     }
   };
 
   const renderStepContent = () => {
+    const totalSteps = getStepCount();
+    const currentStepIndex = getCurrentStepIndex();
+
     switch (currentStep) {
-      case 'selection':
+      case "selection":
         const { adjacent, sameRow } = checkSeatsAlignment();
-        const showSeatingAdvice = selectedSeats.length > 1 && (!adjacent || !sameRow);
+        const showSeatingAdvice =
+          selectedSeats.length > 1 && (!adjacent || !sameRow);
 
         return (
           <>
             <DialogHeader className="sticky top-0 bg-white z-10 pb-4 pr-8">
-              <DialogTitle>Sélectionnez votre siège - Salle {showtime.screen.number}</DialogTitle>
-              <DialogDescription>Places sélectionnées : {selectedSeats.length}</DialogDescription>
+              <DialogTitle className="flex items-center relative gap-10">
+                <RoundedLogo size="small" />
+                <div className="flex flex-col gap-y-2">
+                  <div>
+                    Étape {currentStepIndex} sur {totalSteps} - Sélectionnez
+                    votre siège
+                  </div>
+                  <DialogDescription className="text-sm font-light text-gray-500">
+                    Places sélectionnées : {selectedSeats.length}
+                  </DialogDescription>
+                </div>
+              </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-6 p-4">
-              {showSeatingAdvice && (
-                <Alert className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  <AlertDescription>
-                    Pour une meilleure expérience, nous vous conseillons de choisir des places côte à côte.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {showHandicapWarning && (
-                <Alert variant="warning" className="bg-yellow-50 border-yellow-500 text-yellow-800 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
-                  <AlertDescription>
-                    Ces places sont exclusivement réservées aux personnes à mobilité réduite. 
-                    Si vous n'êtes pas concerné, veuillez sélectionner d'autres places.
-                  </AlertDescription>
-                </Alert>
-              )}
-
+            <div className="space-y-6 px-4">
               <div className="flex justify-center">
                 <ScreenVisualizer
                   seats={seats}
@@ -493,16 +530,48 @@ export function SeatSelectionModal({
 
               {selectedSeats.length > 0 && (
                 <div className="space-y-4 mt-6">
+                  {showSeatingAdvice && (
+                    <Alert className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                      <AlertDescription>
+                        Pour une meilleure expérience, nous vous conseillons de
+                        choisir des places côte à côte.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {showHandicapWarning && (
+                    <Alert
+                      variant="warning"
+                      className="bg-yellow-50 border-yellow-500 text-yellow-800 flex items-center gap-2"
+                    >
+                      <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                      <AlertDescription>
+                        Ces places sont exclusivement réservées aux personnes à
+                        mobilité réduite. Si vous n'êtes pas concerné, veuillez
+                        sélectionner d'autres places.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   <h3 className="font-medium">Réductions applicables</h3>
                   {selectedSeats.map((seatId) => {
-                    const seat = seats.find(s => s.identifier === seatId);
+                    const seat = seats.find((s) => s.identifier === seatId);
                     const isPMR = seat?.isHandicap;
                     return (
-                      <div key={seatId} className="flex items-center justify-between gap-4">
+                      <div
+                        key={seatId}
+                        className="flex items-center justify-between gap-4"
+                      >
                         <span>Siège {seatId}</span>
                         <Select
-                          value={seatDiscounts.find((d) => d.seatId === seatId)?.type || "none"}
-                          onValueChange={(value: DiscountType) => handleDiscountChange(seatId, value)}
+                          value={
+                            seatDiscounts.find((d) => d.seatId === seatId)
+                              ?.type || "none"
+                          }
+                          onValueChange={(value: DiscountType) =>
+                            handleDiscountChange(seatId, value)
+                          }
                           disabled={isPMR}
                         >
                           <SelectTrigger className="w-[200px]">
@@ -510,23 +579,29 @@ export function SeatSelectionModal({
                           </SelectTrigger>
                           <SelectContent>
                             {Object.values(DISCOUNTS)
-                              .filter(discount => {
+                              .filter((discount) => {
                                 if (discount.type === "handicap") {
                                   return seat?.isHandicap;
                                 }
                                 return true;
                               })
                               .map((discount) => {
-                                const isPMRDiscount = discount.type === "handicap";
+                                const isPMRDiscount =
+                                  discount.type === "handicap";
                                 return (
-                                  <SelectItem 
-                                    key={discount.type} 
+                                  <SelectItem
+                                    key={discount.type}
                                     value={discount.type}
                                     disabled={isPMRDiscount}
-                                    className={isPMRDiscount ? "opacity-50 cursor-not-allowed" : ""}
+                                    className={
+                                      isPMRDiscount
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                    }
                                   >
                                     {discount.label}
-                                    {isPMRDiscount && " (Appliqué automatiquement)"}
+                                    {isPMRDiscount &&
+                                      " (Appliqué automatiquement)"}
                                   </SelectItem>
                                 );
                               })}
@@ -538,10 +613,14 @@ export function SeatSelectionModal({
                   })}
 
                   {hasDiscounts() && (
-                    <Alert variant="destructive" className="flex items-center gap-2">
+                    <Alert
+                      variant="destructive"
+                      className="flex items-center gap-2"
+                    >
                       <AlertCircle className="h-4 w-4 flex-shrink-0" />
                       <AlertDescription>
-                        Un justificatif sera demandé à l'entrée du cinéma pour toute place bénéficiant d'une réduction.
+                        Un justificatif sera demandé à l'entrée du cinéma pour
+                        toute place bénéficiant d'une réduction.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -551,10 +630,17 @@ export function SeatSelectionModal({
 
             <div className="sticky bottom-0 bg-white pt-4 mt-4 border-t p-4">
               <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">Prix total : {calculateTotal()}€</div>
+                <div className="text-sm text-gray-500">
+                  Prix total : {calculateTotal()}€
+                </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={onClose}>Annuler</Button>
-                  <Button onClick={handleConfirm} disabled={selectedSeats.length === 0}>
+                  <Button variant="outline" onClick={onClose}>
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={handleConfirm}
+                    disabled={selectedSeats.length === 0}
+                  >
                     Passer au paiement
                   </Button>
                 </div>
@@ -563,39 +649,43 @@ export function SeatSelectionModal({
           </>
         );
 
-      case 'payment':
+      case "payment":
         return (
           <>
             <DialogHeader className="text-center">
               <div className="flex justify-center mb-4">
                 <RoundedLogo size="small" />
               </div>
-              <DialogTitle>Paiement Cinéphoria</DialogTitle>
-              <DialogDescription>Montant total : {calculateTotal()}€</DialogDescription>
+              <DialogTitle>
+                Étape {currentStepIndex} sur {totalSteps} - Paiement Cinéphoria
+              </DialogTitle>
+              <DialogDescription>
+                Montant total : {calculateTotal()}€
+              </DialogDescription>
             </DialogHeader>
             <div className="w-full max-w-[425px] mx-auto">
               <Elements
                 stripe={getStripe()}
                 options={{
                   clientSecret: clientSecret || undefined,
-                  appearance: { theme: 'stripe' as const },
-                  loader: 'never',
-                  locale: 'fr'
+                  appearance: { theme: "stripe" as const },
+                  loader: "never",
+                  locale: "fr",
                 }}
               >
                 <CheckoutForm
                   onSuccess={handlePaymentSuccess}
-                  onError={() => onStepChange('error')}
-                  onCancel={() => onStepChange('selection')}
+                  onError={() => onStepChange("error")}
+                  onCancel={() => onStepChange("selection")}
                 />
               </Elements>
             </div>
           </>
         );
 
-      case 'confirmation':
+      case "confirmation":
         if (!confirmationData) return null;
-        
+
         return (
           <div className="relative">
             <DialogHeader>
@@ -603,7 +693,7 @@ export function SeatSelectionModal({
                 <RoundedLogo size="small" />
               </div>
               <DialogTitle className="text-2xl font-bold text-green-600">
-                Paiement réussi !
+                Confirmation de votre réservation
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-6">
@@ -611,21 +701,21 @@ export function SeatSelectionModal({
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium mb-2">Récapitulatif :</h3>
                 <p>Places : {confirmationData.seats.join(", ")}</p>
-                <p className="mt-2">Montant total : {confirmationData.total}€</p>
+                <p className="mt-2">
+                  Montant total : {confirmationData.total}€
+                </p>
               </div>
               <p className="text-sm text-gray-600">
                 Un email de confirmation vous a été envoyé.
               </p>
             </div>
             <div className="flex justify-end">
-              <Button onClick={handleClose}>
-                Fermer
-              </Button>
+              <Button onClick={handleClose}>Fermer</Button>
             </div>
           </div>
         );
 
-      case 'error':
+      case "error":
         return (
           <>
             <DialogHeader>
@@ -634,30 +724,38 @@ export function SeatSelectionModal({
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-6">
-              <p className="font-medium">Une erreur est survenue lors du paiement.</p>
+              <p className="font-medium">
+                Une erreur est survenue lors du paiement.
+              </p>
               <p className="text-sm text-gray-600">
-                Veuillez réessayer ou contacter le support si le problème persiste.
+                Veuillez réessayer ou contacter le support si le problème
+                persiste.
               </p>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={onClose}>
                 Annuler
               </Button>
-              <Button onClick={async () => {
-                // Recréer une session de paiement
-                const result = await createCheckoutSession({
-                  seats: selectedSeats,
-                  totalAmount: calculateTotal(),
-                  showtimeId: showtime.id,
-                });
+              <Button
+                onClick={async () => {
+                  // Recréer une session de paiement
+                  const result = await createCheckoutSession({
+                    seats: selectedSeats,
+                    totalAmount: calculateTotal(),
+                    showtimeId: showtime.id,
+                  });
 
-                if (result.success && result.clientSecret) {
-                  setClientSecret(result.clientSecret);
-                  onStepChange('payment');
-                } else {
-                  console.error("Erreur lors de la création de la session:", result.error);
-                }
-              }}>
+                  if (result.success && result.clientSecret) {
+                    setClientSecret(result.clientSecret);
+                    onStepChange("payment");
+                  } else {
+                    console.error(
+                      "Erreur lors de la création de la session:",
+                      result.error
+                    );
+                  }
+                }}
+              >
                 Réessayer
               </Button>
             </div>
@@ -672,7 +770,7 @@ export function SeatSelectionModal({
       if (result.success) {
         // Filtrer pour exclure nos propres sélections des sièges temporairement réservés
         const otherBookedSeats = result.seats.filter(
-          seatId => !selectedSeats.includes(seatId)
+          (seatId) => !selectedSeats.includes(seatId)
         );
         setTemporaryBookedSeats(otherBookedSeats);
       }
@@ -682,11 +780,11 @@ export function SeatSelectionModal({
   }, [showtime.id, selectedSeats]);
 
   const handleClose = () => {
-    if (currentStep === 'confirmation') {
+    if (currentStep === "confirmation") {
       resetAllStates();
-      onStepChange('selection');
+      onStepChange("selection");
       onClose();
-    } else if (currentStep === 'selection') {
+    } else if (currentStep === "selection") {
       onClose();
     }
     // Ne rien faire pour les autres étapes (payment et error)
@@ -695,17 +793,17 @@ export function SeatSelectionModal({
   return (
     <>
       {!showLoginDialog && (
-        <Dialog 
+        <Dialog
           open={isOpen}
           onOpenChange={(open) => {
-            if (!open && currentStep === 'selection') {
+            if (!open && currentStep === "selection") {
               handleClose();
             }
           }}
           modal
         >
           <DialogContent className="max-w-3xl overflow-hidden">
-            {showConfetti && currentStep === 'confirmation' && (
+            {showConfetti && currentStep === "confirmation" && (
               <ReactConfetti
                 width={width}
                 height={height}
@@ -713,9 +811,9 @@ export function SeatSelectionModal({
                 numberOfPieces={200}
                 onConfettiComplete={() => setShowConfetti(false)}
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   inset: 0,
-                  pointerEvents: 'none'
+                  pointerEvents: "none",
                 }}
               />
             )}

@@ -69,27 +69,37 @@ export default function MoviePage() {
   return (
     <div className="flex flex-col gap-5 min-h-screen">
       <div className="flex flex-col">
-        <AuroraBackground className="h-[20svh] relative overflow-hidden">
+        <AuroraBackground className="h-[70svh] relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/20 to-purple-500/20 mix-blend-overlay" />
-          <motion.div
-            initial={{ opacity: 0.0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.3,
-              duration: 0.8,
-              ease: "easeInOut",
+          <motion.h1
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center tracking-tight relative py-10"
+            animate={{
+              x: [-2, 0, 2],
             }}
-            className="relative flex flex-col gap-4 items-center justify-center px-4"
+            transition={{
+              duration: 0.1,
+              repeat: Infinity,
+              repeatType: "mirror",
+              ease: "linear",
+            }}
           >
-            <Typo className="font-bold text-xl md:text-6xl text-center py-4">
+            <span className="absolute -inset-0.5 text-red-600/50 blur-[2px] animate-pulse py-10">
               {movie.title}
-            </Typo>
-          </motion.div>
+            </span>
+            <span
+              className="absolute -inset-0.5 text-cyan-600/50 blur-[2px] animate-pulse py-10"
+              style={{ animationDelay: "0.1s" }}
+            >
+              {movie.title}
+            </span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-light to-primary animate-gradient">
+              {movie.title}
+            </span>
+          </motion.h1>
+          <ImagesSlider className="h-[60svh] w-full" images={movie.images}>
+            <div className="absolute border-y  inset-0" />
+          </ImagesSlider>
         </AuroraBackground>
-
-        <ImagesSlider className="h-[60svh] w-full" images={movie.images}>
-          <div className="absolute inset-0" />
-        </ImagesSlider>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 p-10 items-start gap-10 relative">

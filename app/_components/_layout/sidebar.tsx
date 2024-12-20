@@ -28,7 +28,7 @@ export const Sidebar = () => {
           <Link href="/dashboard">Mon profil</Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="rounded-none">
-          Mes tickets
+        <Link href="/dashboard/tickets">Mes tickets</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="my-0" />
         <DropdownMenuItem>

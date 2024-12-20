@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/db/db";
-import { addDays } from "date-fns";
+import { addDays, isBefore, addMinutes, isAfter } from "date-fns";
 
 export async function GetMyCinemas(userId: string) {
   const cinemas = await prisma.cinema.findMany({
@@ -64,6 +64,42 @@ export const createShowtimes = async (userId: string, data: any) => {
         throw new Error(
           `Erreur lors de la création du showtime pour l'horaire : ${time}`
         );
+      }
+
+      // Vérifier si la séance est dans le passé
+      if (isBefore(startTime, new Date())) {
+        throw new Error("Impossible de créer une séance dans le passé");
+      }
+
+      // Vérifier le chevauchement avec les séances existantes
+      const endTime = addMinutes(startTime, selectedMovie.duration);
+      
+      const overlappingShowtime = await prisma.showtime.findFirst({
+        where: {
+          screenId: selectedScreen.id,
+          OR: [
+            {
+              AND: [
+                { startTime: { lte: startTime } },
+                {
+                  startTime: {
+                    gte: addMinutes(startTime, -selectedMovie.duration),
+                  },
+                },
+              ],
+            },
+            {
+              AND: [
+                { startTime: { lte: endTime } },
+                { startTime: { gte: startTime } },
+              ],
+            },
+          ],
+        },
+      });
+
+      if (overlappingShowtime) {
+        throw new Error(`Chevauchement détecté pour la séance du ${startTime.toLocaleString()}`);
       }
 
       // Vérification si la séance existe déjà
