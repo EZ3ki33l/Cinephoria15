@@ -4,12 +4,9 @@ import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -18,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getAllCinemas } from "@/app/(private-access)/administrateur/cinemas/_components/actions";
-import { Maps2 } from "@/app/_components/_maps copy/maps"; // Ajuste le chemin en fonction de la structure de ton projet
+import { DynamicMap } from "@/app/_components/maps/DynamicMap";
 import {
   Accordion,
   AccordionContent,
@@ -186,7 +183,7 @@ export default function CinemasPage() {
         {/* Section droite - Carte */}
         <div className="flex-1">
           <div className="h-full">
-            <Maps2
+            <DynamicMap
               cinemas={cinemas}
               selectedCinema={selectedCinema}
               onMarkerClick={handleMarkerClick}

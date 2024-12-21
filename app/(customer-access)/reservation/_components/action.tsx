@@ -217,6 +217,14 @@ export async function createBooking(data: {
       return { success: false, error: "Séance introuvable" };
     }
 
+    // Vérifier si la séance n'est pas passée
+    const now = new Date();
+    const showtimeDate = new Date(showtime.startTime);
+    
+    if (showtimeDate < now) {
+      return { success: false, error: "Cette séance est déjà passée" };
+    }
+
     // Vérifier que les sièges existent
     const foundSeats = await Promise.all(
       data.seats.map(async (seatId) => {

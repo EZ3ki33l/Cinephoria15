@@ -25,6 +25,8 @@ model User {
   email         String? @unique
   image         String?
   favoriteGenre Genre?  @relation(fields: [genreId], references: [id])
+  favoriteCinema Cinema? @relation("UserFavoriteCinema", fields: [favoriteCinemaId], references: [id])
+  favoriteCinemaId Int?
 
   Admin   Admin?
   Manager Manager?
@@ -34,6 +36,8 @@ model User {
   posts    Post[]
   likes    Like[]
   genreId  Int?
+  comments Comment[]
+  ratings  Rating[]
 }
 
 model Admin {
@@ -67,6 +71,7 @@ model Cinema {
   description String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  favoriteOfUsers User[] @relation("UserFavoriteCinema")
 }
 
 model Address {
@@ -147,6 +152,8 @@ model Movie {
   lovedByTeam Boolean?
   Showtimes   Showtime[]
   Post        Post[]
+  comments    Comment[]
+  ratings     Rating[]
 }
 
 model News {
@@ -262,4 +269,28 @@ model TemporarySelection {
 
   @@index([showtimeId])
   @@index([expiresAt])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movieId   Int
+  userId    String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  rating    Float    // Note de 0.5 à 5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movieId   Int
+  userId    String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([movieId, userId])
 }

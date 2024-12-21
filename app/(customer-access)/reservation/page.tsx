@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Typo } from "@/app/_components/_layout/typography";
-import { useEffect } from "react";
 import { Spinner } from "@/app/_components/_layout/spinner";
 import { getAllCinemas } from "@/app/_components/_maps copy/_components/getAllCinemas";
 import { getShowtimesByScreen } from "./_components/action";
@@ -28,10 +27,9 @@ import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "framer-motion";
 import { SeatSelectionModal } from "./_components/SeatSelectionModal";
 import { useAuth } from "@clerk/nextjs";
+import { Cinema as PrismaCinema } from "@prisma/client";
 
-interface Cinema {
-  id: number;
-  name: string;
+interface Cinema extends PrismaCinema {
   Address: {
     city: string;
   };
@@ -103,7 +101,7 @@ function groupShowtimesByMovie(showtimesByScreen: ShowtimesByScreen[]) {
   return Array.from(movieShowtimes.values());
 }
 
-export default function ShowtimePage() {
+export default function ReservationPage() {
   const [cinemas, setCinemas] = useState<Cinema[]>([]);
   const [selectedCinema, setSelectedCinema] = useState<string>("");
   const [showtimesByScreen, setShowtimesByScreen] = useState<
@@ -176,7 +174,23 @@ export default function ShowtimePage() {
     // Logique de réservation ici
   };
 
-  const handleOpenModal = () => {
+  const handleOpenModal = (showtime: { id: number; startTime: Date; screen: { id: number; number: number } }) => {
+    // Vérifier si la séance est passée
+    const now = new Date();
+    const showtimeDate = new Date(showtime.startTime);
+    
+    if (showtimeDate < now) {
+      // Optionnel : afficher un message d'erreur à l'utilisateur
+      return;
+    }
+    
+    setSelectedShowtimeDetails({
+      id: showtime.id,
+      screen: {
+        id: showtime.screen.id,
+        number: showtime.screen.number
+      }
+    });
     setModalOpen(true);
     setModalStep('selection');
   };
@@ -311,6 +325,7 @@ export default function ShowtimePage() {
                               );
                               const isSelected =
                                 selectedShowtime === showtime.id;
+                              const isPassed = startTime < new Date();
 
                               return (
                                 <div
@@ -318,12 +333,18 @@ export default function ShowtimePage() {
                                   className={`p-3 rounded-lg border text-left transition-colors ${
                                     isSelected
                                       ? "border-primary bg-primary/5"
-                                      : "border-gray-200"
+                                      : isPassed 
+                                        ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed" 
+                                        : "border-gray-200"
                                   }`}
                                 >
                                   <div 
-                                    className="cursor-pointer hover:bg-gray-50 p-2 rounded"
-                                    onClick={() => setSelectedShowtime(showtime.id)}
+                                    className={`p-2 rounded ${
+                                      isPassed 
+                                        ? "cursor-not-allowed pointer-events-none" 
+                                        : "cursor-pointer hover:bg-gray-50"
+                                    }`}
+                                    onClick={() => !isPassed && setSelectedShowtime(showtime.id)}
                                   >
                                     <div className="font-medium flex items-center gap-2">
                                       {startTime.toLocaleTimeString("fr-FR", {
@@ -349,20 +370,21 @@ export default function ShowtimePage() {
                                   <Button
                                     variant="outline"
                                     size="small"
-                                    className="mt-2 w-full"
+                                    className={`mt-2 w-full ${isPassed ? "cursor-not-allowed" : ""}`}
+                                    disabled={isPassed}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setSelectedShowtimeDetails({
+                                      handleOpenModal({
                                         id: showtime.id,
+                                        startTime: startTime,
                                         screen: {
                                           id: showtime.screen.id,
                                           number: showtime.screen.number
                                         }
                                       });
-                                      handleOpenModal();
                                     }}
                                   >
-                                    Choisir mon siège
+                                    {isPassed ? "Séance terminée" : "Choisir mon siège"}
                                   </Button>
                                 </div>
                               );
