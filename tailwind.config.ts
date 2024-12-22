@@ -1,5 +1,7 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss'
 import svgToDataUri from "mini-svg-data-uri";
+
+// @ts-ignore
 import { default as flattenColorPalette } from "tailwindcss/lib/util/flattenColorPalette";
 
 const config: Config = {
@@ -102,6 +104,9 @@ const config: Config = {
       },
       fontFamily: {
         h1: ["Pattaya"],
+      },
+      transitionTimingFunction: {
+        'custom-cubic': 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
     },
   },

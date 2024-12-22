@@ -249,7 +249,7 @@ model Post {
 }
 
 model Like {
-  id     String @id @default(cuid())
+  id     String @id // L'ID sera composé de userId_postId
   userId String
   postId String
 
@@ -258,6 +258,8 @@ model Like {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
 }
 
 model TemporarySelection {

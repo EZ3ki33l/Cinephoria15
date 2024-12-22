@@ -3,6 +3,10 @@
 import { motion } from "framer-motion";
 import { Typo } from "@/app/_components/_layout/typography";
 import { Star, User2, Clock, Calendar } from "lucide-react";
+import { BookingModal } from "../../_components/BookingModal";
+import { useEffect, useState } from "react";
+import { getUserFavoriteCinema } from "@/app/_actions/user";
+import { Button } from "@/app/_components/_layout/button";
 
 interface MovieInfoProps {
   movie: any;
@@ -18,12 +22,26 @@ function formatDuration(minutes: number): string {
   return `${hours}h${remainingMinutes}min`;
 }
 
+
 export function MovieInfo({ movie, ratings }: MovieInfoProps) {
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.5 }
   };
+
+  const [favoriteCinemaId, setFavoriteCinemaId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadFavoriteCinema() {
+      const cinemaId = await getUserFavoriteCinema();
+      if (typeof cinemaId === 'number') {
+        setFavoriteCinemaId(cinemaId);
+      }
+    }
+    loadFavoriteCinema();
+  }, []);
 
   return (
     <motion.div 
@@ -131,6 +149,16 @@ export function MovieInfo({ movie, ratings }: MovieInfoProps) {
             {movie.summary}
           </motion.p>
         </div>
+        <BookingModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          movieId={movie.id}
+          movieTitle={movie.title}
+          cinemaId={favoriteCinemaId}
+        />
+        <Button onClick={() => setIsModalOpen(true)} className="w-full">
+          Réserver
+        </Button>
       </motion.div>
 
       <motion.div 

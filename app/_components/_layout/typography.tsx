@@ -53,7 +53,7 @@ export const Typo = ({
       variantStyles = "text-8xl";
       break;
     case "h1":
-      variantStyles = "text-3xl md:text-6xl font-h1 pb-5 ";
+      variantStyles = "text-3xl md:text-6xl font-h1 ";
       break;
     case "h2":
       variantStyles = "text-2xl md:text-5xl";

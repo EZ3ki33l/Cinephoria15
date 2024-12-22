@@ -4,14 +4,21 @@ import { MovieDiscussion } from "./_components/MovieDiscussion";
 import { getMovieData } from "./_components/getMovieData";
 import { MovieHeader } from "./_components/MovieHeader";
 import { MovieInfo } from "./_components/MovieInfo";
+import { prisma } from "@/db/db";
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
 export default async function MoviePage({
   params,
-}: {
-  params: { id: string };
-}) {
-  const movieId = parseInt(params.id);
+}: PageProps) {
+  // Attendre la résolution des paramètres
+  const resolvedParams = await params;
+  const movieId = parseInt(resolvedParams.id);
+  
   const { movie, posts, ratings } = await getMovieData(movieId);
+  const cinemas = await prisma.cinema.findMany();
 
   return (
     <div className="flex flex-col gap-5 min-h-screen">
@@ -25,10 +32,7 @@ export default async function MoviePage({
         </AuroraBackground>
       </div>
 
-      <MovieInfo 
-        movie={movie} 
-        ratings={ratings} 
-      />
+      <MovieInfo movie={movie} ratings={ratings} />
 
       <div className="px-10 py-6">
         <h2 className="text-2xl font-bold mb-4">Avis et commentaires</h2>

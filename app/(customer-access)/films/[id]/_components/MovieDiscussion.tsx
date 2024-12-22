@@ -18,6 +18,7 @@ import {
 } from "./actions";
 import { ThumbsUp } from "lucide-react";
 import { motion } from "framer-motion";
+import { revalidatePath } from "@/hooks/revalidePath";
 
 interface Post {
   id: string;
@@ -136,6 +137,8 @@ export function MovieDiscussion({
         }
         return post;
       }));
+    } else {
+      console.error(result.error);
     }
   };
 
@@ -153,18 +156,20 @@ export function MovieDiscussion({
 
   const getMostLikedPost = () => {
     if (posts.length === 0) return null;
-    return [...posts].sort((a, b) => b.likes.length - a.likes.length)[0];
+    const sortedPosts = [...posts].sort((a, b) => b.likes.length - a.likes.length);
+    return sortedPosts[0].likes.length > 0 ? sortedPosts[0].id : null;
   };
 
-  const renderPost = (post: Post, isReply = false) => (
+  const mostLikedPostId = getMostLikedPost();
+
+  const renderPost = (post: Post, isReply = false, isMostLiked = false) => (
     <motion.div
       key={post.id}
       className={`bg-white p-4 rounded-lg shadow space-y-2 ${
-        !isReply && post === getMostLikedPost() && post.likes.length > 0 ? 
-        'ring-2 ring-primary ring-offset-2' : ''
+        !isReply && isMostLiked ? 'ring-2 ring-primary ring-offset-2' : ''
       }`}
-      initial={!isReply && post === getMostLikedPost() ? { scale: 0.95 } : {}}
-      animate={!isReply && post === getMostLikedPost() ? { scale: 1 } : {}}
+      initial={!isReply && isMostLiked ? { scale: 0.95 } : {}}
+      animate={!isReply && isMostLiked ? { scale: 1 } : {}}
       transition={{ duration: 0.3 }}
     >
       {editingPost === post.id ? (
@@ -188,7 +193,7 @@ export function MovieDiscussion({
         </div>
       ) : (
         <>
-          {!isReply && post === getMostLikedPost() && post.likes.length > 0 && (
+          {!isReply && isMostLiked && post.likes.length > 0 && (
             <div className="mb-3 text-primary font-medium flex items-center gap-2">
               <ThumbsUp className="w-4 h-4" />
               Commentaire le plus apprécié
@@ -360,13 +365,11 @@ export function MovieDiscussion({
       <div className="space-y-4">
         {posts.length > 0 ? (
           <>
-            {getMostLikedPost() && getMostLikedPost()!.likes.length > 0 && (
-              renderPost(getMostLikedPost()!)
-            )}
-            
-            {posts
-              .filter(post => post !== getMostLikedPost())
-              .map(post => renderPost(post))}
+            {posts.map(post => (
+              <div key={post.id}>
+                {renderPost(post, false, post.id === mostLikedPostId)}
+              </div>
+            ))}
           </>
         ) : (
           <div className="bg-white p-6 rounded-lg shadow text-center">

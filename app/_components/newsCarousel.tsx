@@ -30,7 +30,7 @@ export function NewsCarousel() {
         category: item.category.name,
         shortContent: item.shortContent,
         content: item.content as JSONContent, // Cast the content property to JSONContent
-        src: item.images[0] || "https://via.placeholder.com/300", // Image par défaut
+        src: item.images[0] || "/images/triste.png", // Image par défaut
       }));
 
       setNewsData(data);
@@ -56,13 +56,12 @@ export function NewsCarousel() {
         <Carousel items={cards} />
       ) : (
         <div className="flex flex-col items-center justify-center">
-          <div className="my-5">
-            <Typo variant="h4" theme="primary" className="">
-              Chargement ...
+          <div className="my-5 text-center">
+            <Typo variant="h4" theme="primary" className="mb-2">
+              Aucune actualité disponible.
             </Typo>
-          </div>
-          <div>
-            <Spinner className="my-5" />
+            <img src="/images/triste.png" alt="Icône d'absence d'actualités" className="w-16 h-16 mb-4 rounded-full mx-auto" />
+            <p className="text-gray-500">Nous n'avons pas encore d'actualités à partager.</p>
           </div>
         </div>
       )}

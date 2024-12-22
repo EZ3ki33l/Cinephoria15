@@ -112,3 +112,17 @@ body {
   background: transparent;
   pointer-events: all;
 }
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 8px)); /* -50% plus la moitié du gap */
+  }
+}
+
+.animate-scroll {
+  animation: scroll linear infinite;
+  will-change: transform;
+}

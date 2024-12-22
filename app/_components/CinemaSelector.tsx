@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Cinema } from '@prisma/client';
-import { updateFavoriteCinema, getUserFavoriteCinema } from '@/app/_actions/user';
+import { Cinema } from "@prisma/client";
+import {
+  updateFavoriteCinema,
+  getUserFavoriteCinema,
+} from "@/app/_actions/user";
+import { Button } from "./_layout/button";
 
 interface CinemaSelectorProps {
   cinemas: Cinema[];
@@ -17,14 +20,20 @@ interface CinemaSelectorProps {
   onSelect?: (cinemaId: number) => void;
 }
 
-export function CinemaSelector({ cinemas, currentCinemaId = null, onSelect }: CinemaSelectorProps) {
+export function CinemaSelector({
+  cinemas,
+  currentCinemaId = null,
+  onSelect,
+}: CinemaSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [selectedCinema, setSelectedCinema] = useState<number | null>(currentCinemaId);
+  const [selectedCinema, setSelectedCinema] = useState<number | null>(
+    currentCinemaId
+  );
 
   useEffect(() => {
     async function loadFavoriteCinema() {
       const favoriteCinemaId = await getUserFavoriteCinema();
-      if (typeof favoriteCinemaId === 'number') {
+      if (typeof favoriteCinemaId === "number") {
         setSelectedCinema(favoriteCinemaId);
       }
     }
@@ -40,15 +49,11 @@ export function CinemaSelector({ cinemas, currentCinemaId = null, onSelect }: Ci
 
   return (
     <>
-      <Button 
-        variant="outline" 
-        onClick={() => setOpen(true)}
-        className="gap-2"
-      >
+      <Button variant="outline" onClick={() => setOpen(true)} className="gap-2" size={"medium"}>
         <span>Choisir mon cinéma</span>
         {selectedCinema && (
           <span className="text-sm text-muted-foreground">
-            ({cinemas.find(c => c.id === selectedCinema)?.name})
+            ({cinemas.find((c) => c.id === selectedCinema)?.name})
           </span>
         )}
       </Button>
@@ -62,7 +67,7 @@ export function CinemaSelector({ cinemas, currentCinemaId = null, onSelect }: Ci
             {cinemas.map((cinema) => (
               <Button
                 key={cinema.id}
-                variant={selectedCinema === cinema.id ? "default" : "outline"}
+                variant={selectedCinema === cinema.id ? "primary" : "outline"}
                 onClick={() => handleSelect(cinema.id)}
                 className="w-full justify-start"
               >
@@ -74,4 +79,4 @@ export function CinemaSelector({ cinemas, currentCinemaId = null, onSelect }: Ci
       </Dialog>
     </>
   );
-} 
+}

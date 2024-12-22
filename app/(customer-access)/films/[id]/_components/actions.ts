@@ -184,6 +184,7 @@ export async function likePost(postId: string) {
 
     const like = await prisma.like.create({
       data: {
+        id: `${user.id}_${postId}`,
         postId,
         userId: user.id,
       },
@@ -199,6 +200,9 @@ export async function likePost(postId: string) {
 
     return { success: true, data: like };
   } catch (error) {
+    if ((error as any).code === 'P2002') {
+      return { success: false, error: "Like déjà existant" };
+    }
     console.error("Erreur lors de l'ajout du like:", error);
     return { success: false, error: "Erreur lors de l'ajout du like" };
   }
@@ -211,9 +215,11 @@ export async function unlikePost(postId: string) {
       return { success: false, error: "Non authentifié" };
     }
 
+    const likeId = `${user.id}_${postId}`;
+    
     await prisma.like.delete({
       where: {
-        id: `${user.id}_${postId}`
+        id: likeId
       },
     });
 

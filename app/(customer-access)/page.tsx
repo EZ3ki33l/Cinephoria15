@@ -12,19 +12,24 @@ import { InfiniteExpandableCards } from "../_components/expandableMovieCard";
 import { NewsCarousel } from "../_components/newsCarousel";
 import { AnimationHome } from "@/components/ui/animationHome";
 import { MapsCinema } from "../_components/maps/Maps";
-import { prisma } from "@/db/db";
 import { HeaderWithCinema } from "@/app/_components/_layout/HeaderWithCinema";
 import { Cinema } from "@prisma/client";
 
 export default function HomePage() {
   const [cinemas, setCinemas] = useState<Cinema[]>([]);
   const [formattedCinemas, setFormattedCinemas] = useState<MapsCinema[]>([]);
+  const [uniqueCities, setUniqueCities] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadCinemas() {
       try {
         const fetchedCinemas = await getAllCinemas();
         setCinemas(fetchedCinemas);
+
+        const cities = [
+          ...new Set(fetchedCinemas.map((cinema) => cinema.Address.city)),
+        ];
+        setUniqueCities(cities);
 
         const formatted: MapsCinema[] = fetchedCinemas.map((cinema) => ({
           ...cinema,
@@ -53,9 +58,17 @@ export default function HomePage() {
       <div className="flex flex-col space-y-6">
         <AnimationHome />
         <div className="flex flex-col py-5">
-          <Typo variant="h1" component="h1">
-            Les dernières sorties :
-          </Typo>
+          <div className="flex justify-between items-center">
+            <Typo variant="h1" component="h1">
+              Les dernières sorties :
+            </Typo>
+            <Link href="/films">
+              <Button variant="outline" size={"medium"}>
+                Voir tous les films
+              </Button>
+            </Link>
+          </div>
+
           <div className="pt-5">
             <InfiniteExpandableCards />
           </div>
@@ -79,13 +92,9 @@ export default function HomePage() {
                 Retrouvez-nous à :
               </Typo>
               <ul className="list-disc list-inside ml-5 font-semibold">
-                <li>Nantes</li>
-                <li>Bordeaux</li>
-                <li>Paris</li>
-                <li>Toulouse</li>
-                <li>Lille</li>
-                <li>Charleroi</li>
-                <li>Liège</li>
+                {uniqueCities.map((city, index) => (
+                  <li key={index}>{city}</li>
+                ))}
               </ul>
               <Typo variant="body-base" component="p">
                 Nos salles{" "}

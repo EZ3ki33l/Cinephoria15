@@ -12,6 +12,9 @@ import { SeatSelectionModal } from "../../reservation/_components/SeatSelectionM
 import { useAuth } from "@clerk/nextjs";
 import { LoginDialog } from "@/app/_components/LoginDialog";
 import { CheckoutButton } from "@/app/_components/CheckoutButton";
+import { CinemaSelector } from "@/app/_components/CinemaSelector";
+import { getUserFavoriteCinema } from "@/app/_actions/user";
+import { getAllCinemas } from "@/app/_components/_maps copy/_components/getAllCinemas";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -23,7 +26,7 @@ interface BookingModalProps {
 
 type Step = 'selection' | 'payment' | 'confirmation' | 'error';
 
-export function BookingModal({ isOpen, onClose, movieId, movieTitle, cinemaId }: BookingModalProps) {
+export function BookingModal({ isOpen, onClose, movieId, movieTitle }: BookingModalProps) {
   const [date, setDate] = useState<Date>(new Date());
   const [showtimes, setShowtimes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,20 +36,42 @@ export function BookingModal({ isOpen, onClose, movieId, movieTitle, cinemaId }:
   const [modalStep, setModalStep] = useState<Step>('selection');
   const { userId, isSignedIn } = useAuth();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null);
+  const [cinemas, setCinemas] = useState<any[]>([]);
 
   useEffect(() => {
-    if (isOpen && cinemaId) {
-      loadShowtimes();
+    async function loadFavoriteCinema() {
+      const cinemaId = await getUserFavoriteCinema();
+      if (typeof cinemaId === 'number') {
+        setSelectedCinemaId(cinemaId);
+      }
     }
-  }, [isOpen, cinemaId, date]);
+    loadFavoriteCinema();
+  }, []);
+
+  useEffect(() => {
+    async function loadCinemas() {
+      const fetchedCinemas = await getAllCinemas();
+      setCinemas(fetchedCinemas);
+    }
+    loadCinemas();
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && selectedCinemaId) {
+      setLoading(true);
+      const timer = setTimeout(() => {
+        loadShowtimes();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, selectedCinemaId, date]);
 
   const loadShowtimes = async () => {
-    if (!cinemaId) return;
+    if (!selectedCinemaId) return;
     
-    setLoading(true);
-    setShowtimes([]);
     try {
-      const result = await getShowtimesByScreen(cinemaId, date);
+      const result = await getShowtimesByScreen(selectedCinemaId, date);
       if (result.success && result.data) {
         const filteredShowtimes = result.data.flatMap(screen => 
           screen.showtimes.filter(showtime => showtime.Movie.id === movieId)
@@ -80,6 +105,13 @@ export function BookingModal({ isOpen, onClose, movieId, movieTitle, cinemaId }:
     }
     
     return true;
+  };
+
+  const handleDateSelect = (newDate: Date | undefined) => {
+    if (newDate) {
+      setDate(newDate);
+      setLoading(true);
+    }
   };
 
   if (showLoginDialog) {
@@ -141,29 +173,33 @@ export function BookingModal({ isOpen, onClose, movieId, movieTitle, cinemaId }:
         
         <div className="grid gap-6 py-4">
           <div>
+            <h3 className="mb-2 font-medium">Choisissez un cinéma :</h3>
+            <CinemaSelector
+              cinemas={cinemas}
+              currentCinemaId={selectedCinemaId}
+              onSelect={setSelectedCinemaId}
+            />
+          </div>
+
+          <div>
             <h3 className="mb-2 font-medium">Choisissez une date :</h3>
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(newDate) => {
-                if (newDate) {
-                  setDate(newDate);
-                  loadShowtimes();
-                }
-              }}
+              onSelect={handleDateSelect}
               locale={fr}
               disabled={{ before: new Date() }}
               className="rounded-md border"
             />
           </div>
 
-          {loading ? (
-            <div className="flex justify-center">
-              <Spinner size="large" />
-            </div>
-          ) : !cinemaId ? (
+          {!selectedCinemaId ? (
             <div className="text-center text-muted-foreground">
               Veuillez d'abord sélectionner un cinéma
+            </div>
+          ) : loading ? (
+            <div className="flex justify-center">
+              <Spinner size="large" />
             </div>
           ) : showtimes.length === 0 ? (
             <div className="text-center text-muted-foreground">

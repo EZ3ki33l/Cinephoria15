@@ -9,6 +9,8 @@ import { useOutsideClick } from "@/hooks/use-outside.click";
 import { Spinner } from "./_layout/spinner";
 import { Button } from "./_layout/button";
 import { GetRecentMovies } from "../(private-access)/administrateur/films/_components/actions";
+import { ImagesSlider } from "@/components/ui/image-slider";
+import { BookingModal } from "@/app/(customer-access)/films/_components/BookingModal";
 
 type Movie = {
   id: number;
@@ -42,7 +44,11 @@ export const InfiniteExpandableCards = ({
   const [active, setActive] = useState<Movie | null>(null);
   const [movies, setMovies] = useState<Movie[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedMovieForBooking, setSelectedMovieForBooking] = useState<Movie | null>(null);
+  const [duplicatedMovies, setDuplicatedMovies] = useState<Movie[]>([]);
 
   // Fetch movies on component mount
   useEffect(() => {
@@ -61,20 +67,47 @@ export const InfiniteExpandableCards = ({
     fetchMovies();
   }, []);
 
-  // Duplicate the movie list for infinite scrolling
-  const getDuplicatedMovies = () => {
-    if (!movies) return [];
-    return [...movies, ...movies];
-  };
+  // Vérifier si l'animation est nécessaire
+  useEffect(() => {
+    const checkIfShouldAnimate = () => {
+      if (scrollerRef.current && containerRef.current && movies) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const itemWidth = 350 + 16; // largeur de la carte + gap
+        const totalContentWidth = movies.length * itemWidth;
 
-  // Handle animation speed and direction
+        const shouldScroll = totalContentWidth > containerWidth;
+        setShouldAnimate(shouldScroll);
+
+        if (shouldScroll) {
+          // Augmenter le nombre de duplications pour une transition plus fluide
+          const itemsNeeded = Math.ceil((containerWidth * 3) / itemWidth); // Multiplié par 3 au lieu de 2
+          const duplicates = [...movies, ...movies, ...movies].slice(0, itemsNeeded);
+          setDuplicatedMovies(duplicates);
+        } else {
+          setDuplicatedMovies([]);
+        }
+      }
+    };
+
+    if (movies) {
+      checkIfShouldAnimate();
+    }
+  }, [movies]);
+
+  // Modifier la fonction getAnimationStyle pour une animation plus fluide
   const getAnimationStyle = () => {
-    const duration =
-      speed === "fast" ? "20s" : speed === "normal" ? "40s" : "80s";
+    const duration = speed === "fast" ? "40s" : speed === "normal" ? "60s" : "100s";
     return {
       animationDuration: duration,
       animationDirection: direction === "left" ? "normal" : "reverse",
     };
+  };
+
+  // Gérer le clic sur une carte uniquement si la modale n'est pas déjà ouverte
+  const handleCardClick = (movie: Movie) => {
+    if (!active) {
+      setActive(movie);
+    }
   };
 
   // Close modal on escape key or outside click
@@ -84,7 +117,6 @@ export const InfiniteExpandableCards = ({
         setActive(null);
       }
     }
-
 
     if (active) {
       document.body.style.overflow = "hidden";
@@ -115,12 +147,19 @@ export const InfiniteExpandableCards = ({
           <ul
             ref={scrollerRef}
             className={cn(
-              "flex min-w-full shrink-0 gap-4 py-4 w-max flex-nowrap animate-scroll",
+              "flex gap-4 py-4 w-max flex-nowrap",
+              shouldAnimate ? "animate-scroll" : "mx-auto justify-center",
               pauseOnHover && "hover:[animation-play-state:paused]"
             )}
-            style={getAnimationStyle()}
+            style={shouldAnimate ? getAnimationStyle() : undefined}
+            onAnimationIteration={() => {
+              // Réinitialiser la position au début de l'animation
+              if (scrollerRef.current) {
+                scrollerRef.current.style.transform = 'translateX(0)';
+              }
+            }}
           >
-            {getDuplicatedMovies().map((item, index) => (
+            {(shouldAnimate ? duplicatedMovies : movies)?.map((item, index) => (
               <li
                 key={`${item.id}-${index}`}
                 onClick={() => setActive(item)}
@@ -131,57 +170,74 @@ export const InfiniteExpandableCards = ({
                   after:absolute after:inset-0 after:rounded-2xl after:shadow-[inset_0_0_30px_rgba(236,72,153,0.1)]
                   backdrop-blur-sm"
               >
-                {/* Image de fond */}
-                <Image
-                  src={item.images[0]}
-                  alt={item.title}
-                  fill
-                  className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                />
-                
-                {/* Overlay par défaut avec titre et effet néon */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                  <h3 className="absolute bottom-4 left-4 text-xl font-semibold text-white
-                    drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
-                    {item.title}
-                  </h3>
+                {/* Image de fond et overlay de base */}
+                <div
+                  className="absolute inset-0"
+                  onClick={() => handleCardClick(item)}
+                >
+                  <Image
+                    src={item.images[0]}
+                    alt={item.title}
+                    fill
+                    className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                    <h3
+                      className="absolute bottom-4 left-4 text-xl font-semibold text-white
+                      drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]"
+                    >
+                      {item.title}
+                    </h3>
+                  </div>
                 </div>
 
                 {/* Contenu au hover avec effet glitch */}
-                <div className="absolute inset-0 bg-black/80 p-6 flex flex-col opacity-0 transition-all duration-500
+                <div
+                  className="absolute inset-0 bg-black/80 p-6 flex flex-col opacity-0 transition-all duration-500
                   group-hover:opacity-100 group-hover:backdrop-blur-sm
                   before:absolute before:inset-0 before:border-2 before:border-primary/30 before:rounded-2xl
-                  after:absolute after:inset-0 after:rounded-2xl after:shadow-[inset_0_0_50px_rgba(236,72,153,0.2)]">
-                  <h3 className="text-xl font-semibold text-white mb-2 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
-                    {item.title}
-                  </h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {item.genres?.map((genre, idx) => (
-                      <span 
-                        key={idx} 
-                        className="text-sm px-2 py-1 bg-primary/10 rounded-full text-primary border border-primary/20
-                          shadow-[0_0_10px_rgba(236,72,153,0.2)]"
-                      >
-                        {genre.name}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-sm text-white/90 flex-grow overflow-y-auto mb-4 scrollbar-thin scrollbar-track-primary/10 scrollbar-thumb-primary/50">
-                    {item.summary}
-                  </p>
-                  <Link 
-                    href={`/films/${item.id}`}
-                    onClick={(e) => e.stopPropagation()} 
-                    className="w-full"
+                  after:absolute after:inset-0 after:rounded-2xl after:shadow-[inset_0_0_50px_rgba(236,72,153,0.2)]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Zone cliquable pour la modale */}
+                  <div
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleCardClick(item);
+                    }}
                   >
-                    <Button 
-                      variant="primary" 
-                      className="w-full bg-primary/20 hover:bg-primary/30 text-white border border-primary/50
-                        shadow-[0_0_15px_rgba(236,72,153,0.3)] transition-all duration-300 hover:shadow-[0_0_20px_rgba(236,72,153,0.5)]"
-                    >
-                      Voir le film
-                    </Button>
-                  </Link>
+                    <h3 className="text-xl font-semibold text-white mb-2 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
+                      {item.title}
+                    </h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {item.genres?.map((genre, idx) => (
+                        <span
+                          key={idx}
+                          className="text-sm px-2 py-1 bg-primary/10 rounded-full text-primary border border-primary/20
+                            shadow-[0_0_10px_rgba(236,72,153,0.2)]"
+                        >
+                          {genre.name}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-sm text-white/90 mb-1">
+                      <span className="font-semibold">Réalisateur : </span>
+                      {item.director || "N/A"}
+                    </p>
+                    <p className="text-sm text-white/90 mb-4">
+                      <span className="font-semibold">Date de sortie : </span>
+                      {item.releaseDate
+                        ? new Date(item.releaseDate).toLocaleDateString("fr", {
+                            dateStyle: "long",
+                          })
+                        : "N/A"}
+                    </p>
+                    <p className="text-sm text-white/90 flex-grow overflow-y-auto mb-4 scrollbar-thin scrollbar-track-primary/10 scrollbar-thumb-primary/50">
+                      {item.summary}
+                    </p>
+                  </div>
                 </div>
               </li>
             ))}
@@ -191,7 +247,10 @@ export const InfiniteExpandableCards = ({
 
       <AnimatePresence>
         {active && (
-          <div className="fixed inset-0 z-[100]" onClick={() => setActive(null)}>
+          <div
+            className="fixed inset-0 z-[100]"
+            onClick={() => setActive(null)}
+          >
             {/* Overlay sombre */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -208,24 +267,25 @@ export const InfiniteExpandableCards = ({
               transition={{ duration: 0.2 }}
               className="fixed inset-0 flex items-center justify-center z-[100] p-4"
             >
-              <div 
+              <div
                 className="w-full max-w-[500px] max-h-[90vh] bg-black/90 sm:rounded-3xl overflow-hidden flex flex-col
-                  border border-slate-700/50 backdrop-blur-md
+                  border border-slate-700/50 backdrop-blur-md relative
                   before:absolute before:inset-0 before:border-2 before:border-primary/30 before:rounded-3xl
                   after:absolute after:inset-0 after:rounded-3xl after:shadow-[inset_0_0_50px_rgba(236,72,153,0.2)]"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Container de l'image avec overlay */}
-                <div className="relative h-[400px]">
-                  <Image
-                    priority
-                    fill
-                    src={active.images[0]}
-                    alt={active.title}
-                    className="object-cover object-center"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                </div>
+                {/* Remplacer l'image unique par le composant ImagesSlider */}
+                {active.images && active.images.length > 0 ? (
+                  <ImagesSlider images={active.images}>
+                    <div className="relative h-[400px]">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    </div>
+                  </ImagesSlider>
+                ) : (
+                  <div className="flex items-center justify-center h-[400px] text-white">
+                    Aucune image disponible
+                  </div>
+                )}
 
                 {/* Contenu du modal */}
                 <div className="p-6 text-white">
@@ -235,8 +295,8 @@ export const InfiniteExpandableCards = ({
 
                   <div className="flex flex-wrap gap-2 mb-4">
                     {active.genres?.map((genre, idx) => (
-                      <span 
-                        key={idx} 
+                      <span
+                        key={idx}
                         className="text-sm px-2 py-1 bg-white/10 rounded-full"
                       >
                         {genre.name}
@@ -252,9 +312,12 @@ export const InfiniteExpandableCards = ({
                     <p className="text-gray-300">
                       <span className="text-gray-400">Date de sortie : </span>
                       {active.releaseDate
-                        ? new Date(active.releaseDate).toLocaleDateString("fr", {
-                            dateStyle: "long",
-                          })
+                        ? new Date(active.releaseDate).toLocaleDateString(
+                            "fr",
+                            {
+                              dateStyle: "long",
+                            }
+                          )
                         : "N/A"}
                     </p>
                     <p className="text-gray-200 leading-relaxed">
@@ -262,23 +325,55 @@ export const InfiniteExpandableCards = ({
                     </p>
                   </div>
 
-                  <Link 
-                    href={`/films/${active.id}`}
-                    className="w-full block"
-                  >
-                    <Button 
-                      variant="primary" 
-                      className="w-full text-white"
+                  <div className="flex gap-4">
+                    <Link
+                      href={`/films/${active.id}`}
+                      className="flex-1 block"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
                     >
-                      Voir le film
+                      <Button
+                        type="button"
+                        variant="primary"
+                        className="w-full text-white relative z-50"
+                      >
+                        Voir le film
+                      </Button>
+                    </Link>
+
+                    <Button
+                      type="button"
+                      variant="primary"
+                      className="flex-1 text-white relative z-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActive(null);
+                        setSelectedMovieForBooking(active);
+                        setShowBookingModal(true);
+                      }}
+                    >
+                      Réserver
                     </Button>
-                  </Link>
+                  </div>
                 </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      {selectedMovieForBooking && (
+        <BookingModal
+          isOpen={showBookingModal}
+          onClose={() => {
+            setShowBookingModal(false);
+            setSelectedMovieForBooking(null);
+          }}
+          movieId={selectedMovieForBooking.id}
+          movieTitle={selectedMovieForBooking.title}
+        />
+      )}
     </>
   );
 };

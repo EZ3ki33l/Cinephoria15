@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const ImagesSlider = ({
@@ -26,12 +26,25 @@ export const ImagesSlider = ({
   const [loading, setLoading] = useState(false);
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
   const [direction, setDirection] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout>();
+
+  const startAutoplayTimer = useCallback(() => {
+    if (autoplay) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      intervalRef.current = setInterval(() => {
+        handleNext();
+      }, 5000);
+    }
+  }, [autoplay]);
 
   const handleNext = () => {
     setDirection(1);
     setCurrentIndex((prevIndex) =>
       prevIndex + 1 === images.length ? 0 : prevIndex + 1
     );
+    startAutoplayTimer();
   };
 
   const handlePrevious = () => {
@@ -39,15 +52,36 @@ export const ImagesSlider = ({
     setCurrentIndex((prevIndex) =>
       prevIndex - 1 < 0 ? images.length - 1 : prevIndex - 1
     );
+    startAutoplayTimer();
   };
 
   const handleDotClick = (index: number) => {
     setDirection(index > currentIndex ? 1 : -1);
     setCurrentIndex(index);
+    startAutoplayTimer();
   };
 
   useEffect(() => {
-    loadImages();
+    startAutoplayTimer();
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [startAutoplayTimer]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") {
+        handleNext();
+      } else if (event.key === "ArrowLeft") {
+        handlePrevious();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const loadImages = () => {
@@ -68,29 +102,9 @@ export const ImagesSlider = ({
       })
       .catch((error) => console.error("Failed to load images", error));
   };
+
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight") {
-        handleNext();
-      } else if (event.key === "ArrowLeft") {
-        handlePrevious();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    // autoplay
-    let interval: any;
-    if (autoplay) {
-      interval = setInterval(() => {
-        handleNext();
-      }, 5000);
-    }
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      clearInterval(interval);
-    };
+    loadImages();
   }, []);
 
   const slideVariants = {
@@ -125,40 +139,65 @@ export const ImagesSlider = ({
   const areImagesLoaded = loadedImages.length > 0;
 
   return (
-    <div
-      className={cn(
-        "overflow-hidden h-full w-full relative flex items-center justify-center",
-        className
-      )}
-      style={{
-        perspective: "1500px",
-      }}
-    >
-      {areImagesLoaded && children}
-      {areImagesLoaded && overlay && (
-        <div
-          className={cn("absolute inset-0 bg-slate-300/10 z-40", overlayClassName)}
-        />
-      )}
+    <div className="relative w-full h-full">
+      <div
+        className={cn(
+          "overflow-hidden h-full w-full relative flex items-center justify-center",
+          className
+        )}
+        style={{
+          perspective: "1500px",
+        }}
+      >
+        {areImagesLoaded && (
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
+            <motion.div className="absolute inset-0 z-[51]">
+              <motion.img
+                key={currentIndex}
+                src={loadedImages[currentIndex]}
+                custom={direction}
+                variants={slideVariants}
+                initial="initial"
+                animate="visible"
+                exit="exit"
+                className="image h-full w-full absolute inset-0 object-contain"
+                style={{
+                  backfaceVisibility: "hidden",
+                }}
+              />
+            </motion.div>
+          </AnimatePresence>
+        )}
 
+        {areImagesLoaded && children}
+        
+        {areImagesLoaded && overlay && (
+          <div
+            className={cn("absolute inset-0 bg-slate-300/10 z-[52]", overlayClassName)}
+          />
+        )}
+      </div>
+
+      {/* Contrôles dans un conteneur séparé avec position absolute */}
       {showControls && areImagesLoaded && (
-        <>
+        <div className="absolute inset-0 pointer-events-none">
           <button
             onClick={handlePrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-black/30 hover:bg-black/50 transition-colors rounded-full p-2 text-white"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 transition-colors rounded-full p-2 text-white z-[54] pointer-events-auto"
             aria-label="Image précédente"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
+          
           <button
             onClick={handleNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-black/30 hover:bg-black/50 transition-colors rounded-full p-2 text-white"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 transition-colors rounded-full p-2 text-white z-[54] pointer-events-auto"
             aria-label="Image suivante"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-[54] pointer-events-auto">
             {images.map((_, index) => (
               <button
                 key={index}
@@ -175,25 +214,7 @@ export const ImagesSlider = ({
               </button>
             ))}
           </div>
-        </>
-      )}
-
-      {areImagesLoaded && (
-        <AnimatePresence initial={false} custom={direction} mode="popLayout">
-          <motion.img
-            key={currentIndex}
-            src={loadedImages[currentIndex]}
-            custom={direction}
-            variants={slideVariants}
-            initial="initial"
-            animate="visible"
-            exit="exit"
-            className="image h-full w-full absolute inset-0 object-contain"
-            style={{
-              backfaceVisibility: "hidden",
-            }}
-          />
-        </AnimatePresence>
+        </div>
       )}
     </div>
   );
