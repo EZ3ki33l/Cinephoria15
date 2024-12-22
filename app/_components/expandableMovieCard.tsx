@@ -268,27 +268,29 @@ export const InfiniteExpandableCards = ({
               className="fixed inset-0 flex items-center justify-center z-[100] p-4"
             >
               <div
-                className="w-full max-w-[500px] max-h-[90vh] bg-black/90 sm:rounded-3xl overflow-hidden flex flex-col
-                  border border-slate-700/50 backdrop-blur-md relative
+                className="w-full max-w-[500px] max-h-[90vh] bg-black/90 sm:rounded-3xl overflow-hidden flex flex-col relative
+                  border border-slate-700/50 backdrop-blur-md
                   before:absolute before:inset-0 before:border-2 before:border-primary/30 before:rounded-3xl
                   after:absolute after:inset-0 after:rounded-3xl after:shadow-[inset_0_0_50px_rgba(236,72,153,0.2)]"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Remplacer l'image unique par le composant ImagesSlider */}
-                {active.images && active.images.length > 0 ? (
-                  <ImagesSlider images={active.images}>
-                    <div className="relative h-[400px]">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {/* Slider d'images avec hauteur fixe */}
+                <div className="h-[300px] relative">
+                  {active.images && active.images.length > 0 ? (
+                    <ImagesSlider images={active.images}>
+                      <div className="relative h-full">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      </div>
+                    </ImagesSlider>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-white">
+                      Aucune image disponible
                     </div>
-                  </ImagesSlider>
-                ) : (
-                  <div className="flex items-center justify-center h-[400px] text-white">
-                    Aucune image disponible
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Contenu du modal */}
-                <div className="p-6 text-white">
+                <div className="flex flex-col flex-1 p-6 text-white overflow-hidden">
                   <h3 className="text-2xl font-semibold mb-4">
                     {active.title}
                   </h3>
@@ -304,57 +306,63 @@ export const InfiniteExpandableCards = ({
                     ))}
                   </div>
 
-                  <div className="space-y-3 mb-6">
-                    <p className="text-gray-300">
-                      <span className="text-gray-400">Réalisateur : </span>
-                      {active.director || "N/A"}
-                    </p>
-                    <p className="text-gray-300">
-                      <span className="text-gray-400">Date de sortie : </span>
-                      {active.releaseDate
-                        ? new Date(active.releaseDate).toLocaleDateString(
-                            "fr",
-                            {
-                              dateStyle: "long",
-                            }
-                          )
-                        : "N/A"}
-                    </p>
-                    <p className="text-gray-200 leading-relaxed">
-                      {active.summary}
-                    </p>
-                  </div>
+                  <div className="flex flex-col flex-1 min-h-0">
+                    <div className="space-y-3 mb-4">
+                      <p className="text-gray-300">
+                        <span className="text-gray-400">Réalisateur : </span>
+                        {active.director || "N/A"}
+                      </p>
+                      <p className="text-gray-300">
+                        <span className="text-gray-400">Date de sortie : </span>
+                        {active.releaseDate
+                          ? new Date(active.releaseDate).toLocaleDateString(
+                              "fr",
+                              {
+                                dateStyle: "long",
+                              }
+                            )
+                          : "N/A"}
+                      </p>
+                    </div>
 
-                  <div className="flex gap-4">
-                    <Link
-                      href={`/films/${active.id}`}
-                      className="flex-1 block"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
+                    {/* Conteneur scrollable pour le résumé */}
+                    <div className="flex-1 overflow-y-auto min-h-0 mb-4 pr-2 scrollbar-thin scrollbar-track-white/10 scrollbar-thumb-white/20">
+                      <p className="text-gray-200 leading-relaxed">
+                        {active.summary}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-4 mt-auto">
+                      <Link
+                        href={`/films/${active.id}`}
+                        className="flex-1 block"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
+                        <Button
+                          type="button"
+                          variant="primary"
+                          className="w-full text-white relative z-50"
+                        >
+                          Voir le film
+                        </Button>
+                      </Link>
+
                       <Button
                         type="button"
                         variant="primary"
-                        className="w-full text-white relative z-50"
+                        className="flex-1 text-white relative z-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActive(null);
+                          setSelectedMovieForBooking(active);
+                          setShowBookingModal(true);
+                        }}
                       >
-                        Voir le film
+                        Réserver
                       </Button>
-                    </Link>
-
-                    <Button
-                      type="button"
-                      variant="primary"
-                      className="flex-1 text-white relative z-50"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActive(null);
-                        setSelectedMovieForBooking(active);
-                        setShowBookingModal(true);
-                      }}
-                    >
-                      Réserver
-                    </Button>
+                    </div>
                   </div>
                 </div>
               </div>
