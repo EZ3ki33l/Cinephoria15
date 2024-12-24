@@ -10,8 +10,11 @@ export async function getAllCinemas() {
         Screens: {
           include: {
             Seats: true,
+            ProjectionType: true,
+            SoundSystemType: true,
           },
         },
+        Equipment: true,
       },
     });
     if (!cinemas) return null;
@@ -20,7 +23,7 @@ export async function getAllCinemas() {
     return cinemas.map(cinema => ({
       id: cinema.id,
       name: cinema.name,
-      equipment : cinema.Equipment,
+      Equipment: cinema.Equipment,
       Address: {
         street: cinema.Address.street,
         postalCode: cinema.Address.postalCode,
@@ -31,8 +34,8 @@ export async function getAllCinemas() {
       screens: cinema.Screens.map(screen => ({
         id: screen.id,
         number : screen.number,
-        projectionType: screen.projectionType,
-        soundSystemType: screen.soundSystemType,
+        projectionType: screen.ProjectionType?.name,
+        soundSystemType: screen.SoundSystemType?.name,
         seats: screen.Seats.length,
       })),
     }));
