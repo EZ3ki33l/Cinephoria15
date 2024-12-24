@@ -10,7 +10,7 @@ import { Spinner } from "./_layout/spinner";
 import { Button } from "./_layout/button";
 import { GetRecentMovies } from "../(private-access)/administrateur/films/_components/actions";
 import { ImagesSlider } from "@/components/ui/image-slider";
-import { BookingModal } from "@/app/(customer-access)/films/_components/BookingModal";
+import { BookingModal } from "@/app/films/_components/BookingModal";
 
 type Movie = {
   id: number;

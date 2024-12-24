@@ -1,8 +1,6 @@
 import { prisma } from "@/db/db";
 import { auth } from "@clerk/nextjs/server";
 import { Unauthorized, Unconnected } from "@/app/_components/unauthorized";
-import { ClerkProvider } from "@clerk/nextjs";
-import { frFR } from "@clerk/localizations";
 import { Toaster } from "sonner";
 import { Container } from "@/app/_components/_layout/container";
 import localFont from "next/font/local";
@@ -36,28 +34,20 @@ export default async function Layout({
     },
   });
   if (!isManager) {
-    <Unauthorized uid={userId} role="manager" />;
+    return <Unauthorized uid={userId} role="manager" />;
   }
 
-  if (isManager) {
-    return (
-      <ClerkProvider localization={frFR} dynamic>
-        <html lang="fr-FR">
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          >
-            <Toaster />
-            <Container className="flex flex-col min-h-svh">
-              <header>
-                <Navbar />
-              </header>
-              <div className="flex-grow ">
-                <div className="mt-44 mb-16 relative">{children}</div>
-              </div>
-            </Container>
-          </body>
-        </html>
-      </ClerkProvider>
-    );
-  } 
+  return (
+    <div className={`${geistSans.variable} ${geistMono.variable}`}>
+      <Toaster />
+      <Container className="flex flex-col min-h-svh relative dark:bg-dot-white/[0.2] bg-dot-black/[0.2]">
+        <header>
+            <Navbar />
+          </header>
+          <main className="flex-grow">
+            <div className="mt-16 mb-16 relative">{children}</div>
+          </main>
+      </Container>
+    </div>
+  );
 }

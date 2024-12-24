@@ -5,13 +5,13 @@ import { getAllCinemas } from "@/app/(private-access)/administrateur/cinemas/_co
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Typo } from "../_components/_layout/typography";
+import { Typo } from "./_components/_layout/typography";
 import { DynamicMap } from "@/app/_components/maps/DynamicMap";
-import { Button } from "../_components/_layout/button";
-import { InfiniteExpandableCards } from "../_components/expandableMovieCard";
-import { NewsCarousel } from "../_components/newsCarousel";
+import { Button } from "./_components/_layout/button";
+import { InfiniteExpandableCards } from "./_components/expandableMovieCard";
+import { NewsCarousel } from "./_components/newsCarousel";
 import { AnimationHome } from "@/components/ui/animationHome";
-import { MapsCinema } from "../_components/maps/Maps";
+import { MapsCinema } from "./_components/maps/Maps";
 import { HeaderWithCinema } from "@/app/_components/_layout/HeaderWithCinema";
 import { Cinema } from "@prisma/client";
 

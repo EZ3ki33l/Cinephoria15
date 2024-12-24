@@ -36,31 +36,20 @@ export default async function Layout({
     },
   });
   if (!isAdmin) {
-    <Unauthorized uid={userId} role="administrateur" />;
+    return <Unauthorized uid={userId} role="administrateur" />;
   }
 
-  if (isAdmin) {
-    return (
-      <ClerkProvider localization={frFR} dynamic>
-        <html lang="fr-FR">
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          >
-            <Toaster />
-            <Container className="flex flex-col min-h-svh">
-              <div className="w-full dark:bg-black bg-white  dark:bg-dot-white/[0.2] bg-dot-black/[0.2] relative flex items-center justify-center">
-                <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-                <header>
-                  <Navbar />
-                </header>
-                <div className="flex-grow ">
-                  <div className="mt-44 mb-16 relative">{children}</div>
-                </div>
-              </div>
-            </Container>
-          </body>
-        </html>
-      </ClerkProvider>
-    );
-  } // Renvoyer les enfants sans le layout si l'utilisateur est un administrateur
+  return (
+    <div className={`${geistSans.variable} ${geistMono.variable}`}>
+      <Toaster />
+      <Container className="flex flex-col min-h-svh relative dark:bg-dot-white/[0.2] bg-dot-black/[0.2]">
+          <header>
+            <Navbar />
+          </header>
+          <main className="flex-grow">
+            <div className="mt-16 mb-16 relative">{children}</div>
+          </main>
+      </Container>
+    </div>
+  );
 }

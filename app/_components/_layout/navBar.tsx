@@ -14,7 +14,7 @@ import { NavbarLinks } from "./navBarLinks";
 import { Sidebar } from "./sidebar";
 import { Typo } from "./typography";
 import { Button } from "./button";
-import { getUserProfile } from "@/app/(customer-access)/dashboard/_components/actions";
+import { getUserProfile } from "@/app/dashboard/_components/actions";
 
 export const Navbar = () => {
   const { isSignedIn, userId } = useAuth();

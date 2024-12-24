@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserProfile } from "@/app/(customer-access)/dashboard/_components/actions";
+import { getUserProfile } from "@/app/dashboard/_components/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
