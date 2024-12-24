@@ -129,3 +129,10 @@ export async function updateUserProfile({
     imageUrl: updatedUser.image,
   };
 }
+
+// Supprimer le compte utilisateur
+export async function deleteUserAccount(userId: string) {
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+}

@@ -101,7 +101,11 @@ export async function deletePost(postId: string) {
       where: { id: postId },
     });
 
-    if (!post || post.userId !== user.id) {
+    const isAdmin = await prisma.admin.findUnique({
+      where: { id: user.id }
+    });
+
+    if (!post || (post.userId !== user.id && !isAdmin)) {
       return { success: false, error: "Non autorisé" };
     }
 

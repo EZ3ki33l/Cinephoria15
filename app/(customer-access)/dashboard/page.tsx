@@ -8,9 +8,11 @@ import {
   getUserProfile,
   getGenres,
   updateUserProfile,
+  deleteUserAccount,
 } from "./_components/actions";
 import { useForm, FormProvider } from "react-hook-form";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
   const { isLoaded, isSignedIn, userId } = useAuth();
@@ -65,7 +67,6 @@ export default function ProfilePage() {
     favoriteGenreId: string;
     newImageUrl?: string | null;
   }) => {
-    const genreId = parseInt(data.favoriteGenreId, 10);
     setIsSubmitting(true);
 
     try {
@@ -74,18 +75,20 @@ export default function ProfilePage() {
         userName: data.userName,
         firstName: data.firstName,
         lastName: data.lastName,
-        genreId,
+        genreId: parseInt(data.favoriteGenreId, 10),
         newImageUrl: data.newImageUrl,
       });
 
       setUserData(updatedUser);
       toast.success("Profil mis à jour");
+      window.location.reload();
     } catch (error) {
       toast.error("Erreur lors de la mise à jour");
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   if (!formInitialized) {
     return <div>Chargement...</div>;
@@ -101,8 +104,13 @@ export default function ProfilePage() {
             user={userData}
             genres={genres}
             onSubmit={methods.handleSubmit(handleSubmitForm)} // Passer la fonction handleSubmit ici
+            userId={userId ?? ""} // Fournir une chaîne vide par défaut
           />
         </FormProvider>
+      </div>
+
+      <div>
+
       </div>
     </div>
   );

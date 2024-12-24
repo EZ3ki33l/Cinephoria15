@@ -87,6 +87,7 @@ export async function getMovieData(movieId: number) {
       average: averageRating,
       total: ratings.length,
       userRating,
+      userRatings: ratings,
     },
   };
 } 

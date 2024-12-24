@@ -20,14 +20,18 @@ import { useEffect, useState } from "react";
 import { Genre, User } from "@prisma/client";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { toast } from "sonner";
+import { deleteUserAccount } from "./actions";
+import { redirect } from "next/navigation";
+import AlertDialog from "./AlertDialog";
 
 interface ProfileFormProps {
   user: User;
   genres: Genre[];
   onSubmit: (data: any) => void;
+  userId: string;
 }
 
-export const ProfileForm = ({ user, genres, onSubmit }: ProfileFormProps) => {
+export const ProfileForm = ({ user, genres, onSubmit, userId }: ProfileFormProps) => {
   const {
     register,
     setValue,
@@ -43,6 +47,24 @@ export const ProfileForm = ({ user, genres, onSubmit }: ProfileFormProps) => {
     name: "newImageUrl",
     defaultValue: user.image || "",
   });
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
+  const handleDeleteAccount = () => {
+    setIsAlertOpen(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    try {
+      await deleteUserAccount(userId);
+      toast.success("Compte supprimé avec succès");
+      redirect("/sign-in");
+    } catch (error) {
+      toast.error("Erreur lors de la suppression du compte");
+    } finally {
+      setIsAlertOpen(false);
+    }
+  };
 
   useEffect(() => {
     // Initialisation des valeurs du formulaire avec setValue
@@ -63,8 +85,17 @@ export const ProfileForm = ({ user, genres, onSubmit }: ProfileFormProps) => {
     }
   }, [newImageUrl, initialImageUrl]);
 
+  const handleSubmitForm = async (data: any) => {
+    try {
+      await onSubmit(data);
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+    <form className="space-y-4" onSubmit={handleSubmit(handleSubmitForm)}>
       {/* Champ Pseudo (Username) */}
       <FormField
         name="userName"
@@ -190,11 +221,20 @@ export const ProfileForm = ({ user, genres, onSubmit }: ProfileFormProps) => {
       </div>
 
       {/* Bouton d'envoi */}
-      <div>
-        <Button type="submit" className="mt-4">
+      <div className="flex justify-between gap-4">
+        <Button variant="secondary" type="submit" className="mt-4">
           Enregistrer
         </Button>
+        <Button type="button" onClick={handleDeleteAccount} className="mt-4 bg-red-500">
+          Supprimer le compte
+        </Button>
       </div>
+
+      <AlertDialog
+        isOpen={isAlertOpen}
+        onClose={() => setIsAlertOpen(false)}
+        onConfirm={confirmDeleteAccount}
+      />
     </form>
   );
 };

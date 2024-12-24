@@ -5,6 +5,7 @@ import { getMovieData } from "./_components/getMovieData";
 import { MovieHeader } from "./_components/MovieHeader";
 import { MovieInfo } from "./_components/MovieInfo";
 import { prisma } from "@/db/db";
+import { currentUser } from "@clerk/nextjs/server";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -17,8 +18,14 @@ export default async function MoviePage({
   const resolvedParams = await params;
   const movieId = parseInt(resolvedParams.id);
   
+  const user = await currentUser();
+  const userDetails = user ? await prisma.admin.findUnique({
+    where: { id: user.id }
+  }) : null;
+
+  const isAdmin = !!userDetails;
+  
   const { movie, posts, ratings } = await getMovieData(movieId);
-  const cinemas = await prisma.cinema.findMany();
 
   return (
     <div className="flex flex-col gap-5 min-h-screen">
@@ -42,6 +49,8 @@ export default async function MoviePage({
           initialRating={ratings.userRating}
           averageRating={ratings.average}
           totalRatings={ratings.total}
+          userRatings={ratings.userRatings}
+          isAdmin={isAdmin}
         />
       </div>
     </div>

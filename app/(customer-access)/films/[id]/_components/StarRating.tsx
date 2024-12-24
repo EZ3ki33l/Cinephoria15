@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, StarHalf } from "lucide-react";
+import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface StarRatingProps {
@@ -25,7 +25,6 @@ export function StarRating({ value, onChange, disabled = false }: StarRatingProp
     const x = e.clientX - rect.left;
     const percent = x / width;
 
-    // Si on est dans la première moitié de l'étoile
     if (percent <= 0.5) {
       setHoverRating(starIndex + 0.5);
     } else {
@@ -50,22 +49,19 @@ export function StarRating({ value, onChange, disabled = false }: StarRatingProp
         onMouseMove={(e) => handleMouseMove(e, index)}
         onClick={() => handleClick(hoverRating ?? displayRating)}
       >
-        {half ? (
-          <StarHalf className={`w-6 h-6 ${disabled ? 'text-gray-300' : 'text-yellow-400'}`} />
-        ) : (
+        <Star
+          className={`w-6 h-6 ${
+            disabled ? 'text-gray-300' : 'text-yellow-400'
+          }`}
+        />
+        
+        <div className="absolute inset-0 overflow-hidden" style={{ width: half ? '50%' : filled ? '100%' : '0%' }}>
           <Star
             className={`w-6 h-6 ${
-              filled
-                ? disabled
-                  ? 'text-gray-300'
-                  : 'text-yellow-400 fill-yellow-400'
-                : disabled
-                ? 'text-gray-300'
-                : 'text-yellow-400'
-            }`}
-            fill={filled ? 'currentColor' : 'none'}
+              disabled ? 'text-gray-300' : 'text-yellow-400'
+            } fill-current`}
           />
-        )}
+        </div>
       </div>
     );
   };
