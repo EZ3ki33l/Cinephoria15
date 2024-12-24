@@ -23,20 +23,41 @@ import { MoreVertical } from "lucide-react";
 import { Genre } from "@prisma/client";
 import { DeleteDropdownItem } from "./_components/deleteDropItem";
 
+type Admin = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  User: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    firstName: string;
+    lastName: string;
+    userName: string | null;
+    email: string | null;
+    image: string | null;
+    favoriteCinemaId: number | null;
+    genreId: number | null;
+    Genre?: {
+      name: string;
+    } | null;
+  };
+};
+
 type AdminWithUser = {
   id: string;
   createdAt: string;
   updatedAt: string;
   User: {
     id: string;
-    createdAt: string;
-    updatedAt: string;
     firstName: string;
     lastName: string;
     userName: string | null;
     email: string | null;
     image: string | null;
-    favoriteGenre: Genre | null;
+    createdAt: string;
+    updatedAt: string;
+    favoriteGenre: string | null;
   };
 };
 
@@ -52,16 +73,21 @@ export default function AdminPage() {
   useEffect(() => {
     async function loadAdmins() {
       try {
-        const admins = await getAllAdmins();
+        const admins = (await getAllAdmins()) as Admin[];
         const transformedAdmins = admins.map((admin) => ({
-          ...admin,
+          id: admin.id,
           createdAt: admin.createdAt.toISOString(),
           updatedAt: admin.updatedAt.toISOString(),
           User: {
-            ...admin.User,
+            id: admin.User.id,
+            firstName: admin.User.firstName,
+            lastName: admin.User.lastName,
+            userName: admin.User.userName,
+            email: admin.User.email,
+            image: admin.User.image,
             createdAt: admin.User.createdAt.toISOString(),
             updatedAt: admin.User.updatedAt.toISOString(),
-            favoriteGenre: admin.User.favoriteGenre, // Add this line
+            favoriteGenre: admin.User.Genre?.name ?? null,
           },
         }));
         setAdmins(transformedAdmins);
