@@ -3,7 +3,7 @@
 import { prisma } from "@/db/db";
 
 export async function getAllEquipments() {
-  return prisma.equipment.findMany({});
+  return prisma.equipment.findMany();
 }
 
 export async function deleteEquipment(id: number) {

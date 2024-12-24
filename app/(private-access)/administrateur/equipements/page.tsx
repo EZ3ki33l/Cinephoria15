@@ -23,7 +23,7 @@ import { getAllEquipments } from "./_components/actions";
 
 export default function EquipementPage() {
   const [equipments, setEquipments] = useState<
-    { id: number; name: string; cinemaId: number | null }[]
+    { id: number; name: string; }[]
   >([]);
 
   const handleDelete = (id: number) => {
