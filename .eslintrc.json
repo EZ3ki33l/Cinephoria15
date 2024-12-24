@@ -1,11 +1,7 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "next/typescript"
-  ],
+  "extends": "next/core-web-api",
   "rules": {
-    "react/no-unescaped-entities": "off",
-    "@next/next/no-page-custom-font": "off",
-    "ignoreDuringBuilds": true
-  }
+    "@next/next/no-html-link-for-pages": "off"
+  },
+  "ignoreDuringBuilds": 0
 }
