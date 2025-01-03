@@ -130,14 +130,16 @@ export function Maps({
               <p>{selectedMarker.screens.length} salles</p>
             </CardContent>
             <CardFooter>
-              <Link
-                href={`/cinemas?selected=${selectedMarker.id}`}
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${selectedMarker.Address.lat},${selectedMarker.Address.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full"
               >
                 <Button className="w-full" variant="default" size="sm">
-                  Voir ce cinéma
+                  S'y rendre
                 </Button>
-              </Link>
+              </a>
             </CardFooter>
           </Card>
         </InfoWindow>

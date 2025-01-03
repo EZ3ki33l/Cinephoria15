@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres.ieljpmuqwrlpuhuptvls:jVECzgjKl86disUY@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+      DIRECT_URL: "postgresql://postgres.ieljpmuqwrlpuhuptvls:jVECzgjKl86disUY@aws-0-eu-west-3.pooler.supabase.com:5432/postgres"
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Zmxvd2luZy1hbGJhY29yZS02NS5jbGVyay5hY2NvdW50cy5kZXYk"
+      CLERK_SECRET_KEY: "sk_test_CC1QvnZ2UydqiT0D0IHoRgtBLCR9Ez3LVNQ80mZkDG"
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: "AIzaSyDGVTwxTHoPRZ72UKYubcOIvfrbSVQF7Xw"
+      RESEND_API_KEY: "re_DVL5TfoH_ELm4YfNhresYMDR5F3T6NGci"
+      GOOGLE_MAPS_LIBRARIES: '["marker"]'
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_51PriRYB37x8J7L1MQS5qLaOXGqvZ5Ys3vudVFZytDvxHwuE2Rh9cM6QrkFJ6hj0fpPmXOyXZRD9klQTRXVkzOXSg00Nf9Xh1rh"
+      STRIPE_SECRET_KEY: "sk_test_51PriRYB37x8J7L1MstUy1sH9UW0fpJ3wZ4DWb9IqHA3iF7qGvEFOiF4wymLiLxrkXw5Z8htZrN5ScUKQrhU5skVC00X255YjkY"
+      UPLOADTHING_TOKEN: "eyJhcGlLZXkiOiJza19saXZlXzgzZjA1YTVkZjg2ODQ0ZDdlNzQ1NmE3NTgxZWFlNmYwMjU2MjE0ZDEwNzMyNzVmYjhjNGU0OTE1NzcxOGYyYjIiLCJhcHBJZCI6InpiaGw0ZHJ0c3UiLCJyZWdpb25zIjpbInNlYTEiXX0="

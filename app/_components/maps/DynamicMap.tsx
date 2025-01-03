@@ -1,7 +1,4 @@
 import dynamic from "next/dynamic";
-import { Maps } from "./Maps";
-import type { MapsCinema } from "./Maps";
-
 export const DynamicMap = dynamic(
   () => import("./Maps").then((mod) => mod.Maps),
   { 
