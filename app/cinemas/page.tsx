@@ -62,7 +62,9 @@ export default function CinemasPage() {
   const [showtimesByScreen, setShowtimesByScreen] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedShowtime, setSelectedShowtime] = useState<any>(null);
-  const [modalStep, setModalStep] = useState<"selection" | "payment" | "confirmation" | "error">("selection");
+  const [modalStep, setModalStep] = useState<
+    "selection" | "payment" | "confirmation" | "error"
+  >("selection");
 
   useEffect(() => {
     const fetchCinemas = async () => {
@@ -102,7 +104,7 @@ export default function CinemasPage() {
     };
 
     fetchCinemas();
-  }, []);
+  }, [getAllCinemas]);
 
   useEffect(() => {
     const fetchShowtimes = async () => {
@@ -173,7 +175,7 @@ export default function CinemasPage() {
             className="relative flex flex-col gap-4 items-center justify-center px-4"
           >
             <div className="text-xl md:text-3xl font-bold dark:text-white text-center">
-            Explorez l'univers futuriste des cinémas Cinéphoria !
+              Explorez l'univers futuriste des cinémas Cinéphoria !
             </div>
             <div className="font-extralight text-base md:text-xl dark:text-neutral-200 text-center py-4">
               Sur cette page, retrouvez toutes les informations sur nos cinémas,
@@ -283,11 +285,11 @@ export default function CinemasPage() {
             <Typo variant="h1" component="h1">
               Les films en salle :
             </Typo>
-            
+
             {selectedCinema && (
               <Popover>
                 <PopoverTrigger asChild>
-                <Button variant="icon" className="flex items-center gap-2">
+                  <Button variant="icon" className="flex items-center gap-2">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {format(date, "d MMMM yyyy", { locale: fr })}
                   </Button>
@@ -329,7 +331,10 @@ export default function CinemasPage() {
                     <CardTitle>{movie.title}</CardTitle>
                     <div className="flex gap-2 flex-wrap">
                       {movie.genres?.map((genre: any) => (
-                        <span key={genre.id} className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                        <span
+                          key={genre.id}
+                          className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full"
+                        >
                           {genre.name}
                         </span>
                       ))}
@@ -338,10 +343,16 @@ export default function CinemasPage() {
                   <CardContent>
                     <div className="space-y-4">
                       <p className="text-sm text-gray-500">
-                        Durée : {Math.floor(movie.duration / 60)}h{movie.duration % 60 ? `${movie.duration % 60}min` : ""}
+                        Durée : {Math.floor(movie.duration / 60)}h
+                        {movie.duration % 60 ? `${movie.duration % 60}min` : ""}
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {showtimes.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                        {showtimes
+                          .sort(
+                            (a: any, b: any) =>
+                              new Date(a.startTime).getTime() -
+                              new Date(b.startTime).getTime()
+                          )
                           .map((showtime: any) => (
                             <Button
                               key={showtime.id}
@@ -349,7 +360,9 @@ export default function CinemasPage() {
                               onClick={() => handleOpenModal(showtime)}
                               className="flex-grow-0"
                             >
-                              {format(new Date(showtime.startTime), "HH:mm", { locale: fr })}
+                              {format(new Date(showtime.startTime), "HH:mm", {
+                                locale: fr,
+                              })}
                               <span className="ml-1 text-xs text-gray-500">
                                 (Salle {showtime.screen.number})
                               </span>
@@ -373,8 +386,8 @@ export default function CinemasPage() {
             id: selectedShowtime.id,
             screen: {
               id: selectedShowtime.Screen.id,
-              number: selectedShowtime.Screen.number
-            }
+              number: selectedShowtime.Screen.number,
+            },
           }}
           onSeatSelect={() => {}}
           onStepChange={setModalStep}
