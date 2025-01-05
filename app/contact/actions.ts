@@ -31,7 +31,7 @@ export async function submitContactForm(data: ContactFormData) {
 
     // Envoyer un email de confirmation
     await resend.emails.send({
-      from: "contact@cinephoria.fr",
+      from: "onboarding@resend.dev",
       to: validatedData.email,
       subject: "Confirmation de votre message",
       html: `
