@@ -5,7 +5,6 @@ import {
   AlertDialogContent,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { VisuallyHidden } from "@/app/components/ui/visually-hidden";
 import { Role } from "@/utils/types";
 import Image from "next/image";
 import { Typo } from "./_layout/typography";
@@ -14,6 +13,7 @@ import { Button } from "./_layout/button";
 import { CopyToClipboard } from "./copyToClipboard";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { VisuallyHidden } from "./visually-hidden";
 
 export interface ITellThemProps {
   uid: string;

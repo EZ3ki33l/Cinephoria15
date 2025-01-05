@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "../_components/_layout/button";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "framer-motion";
+import { Logo } from "../_components/_layout/logo";
 
 export default function page() {
   return (
@@ -21,6 +22,7 @@ export default function page() {
           }}
           className="relative flex flex-col gap-4 items-center justify-center px-4"
         >
+          <Logo size="small" />
           <div className="text-xl md:text-3xl font-bold dark:text-white text-center">
             Bienvenue dans l'univers Cinéphoria.
           </div>

@@ -251,7 +251,23 @@ export default function ReservationPage() {
           </div>
         </div>
 
-        {selectedCinema && (
+        {!selectedCinema && (
+          <div className="mt-8 text-center">
+            <Typo variant="h3" component="h3" className="text-gray-500">
+              Merci de sélectionner un cinéma pour voir les séances disponibles
+            </Typo>
+          </div>
+        )}
+
+        {selectedCinema && showtimesByScreen.length === 0 && !loading && (
+          <div className="mt-8 text-center">
+            <Typo variant="h3" component="h3" className="text-gray-500">
+              Il n'existe pas de séance disponible pour ce cinéma à cette date
+            </Typo>
+          </div>
+        )}
+
+        {selectedCinema && showtimesByScreen.length > 0 && (
           <div className="mt-8">
             <div className="flex items-center gap-4 mb-6">
               <Typo variant="h2" component="h2">

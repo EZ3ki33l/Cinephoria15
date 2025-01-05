@@ -1,8 +1,6 @@
 import { prisma } from "@/db/db";
 import { auth } from "@clerk/nextjs/server";
 import { Unauthorized, Unconnected } from "@/app/_components/unauthorized";
-import { ClerkProvider } from "@clerk/nextjs";
-import { frFR } from "@clerk/localizations";
 import { Toaster } from "sonner";
 import { Container } from "@/app/_components/_layout/container";
 import localFont from "next/font/local";

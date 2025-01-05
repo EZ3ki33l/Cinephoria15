@@ -30,16 +30,16 @@ interface Props {
     | "danger"
     | "success"
     | "warning";
-  weight?: "regular" | "medium" | "semibold" | "bold" | "extra-bold"; // Correction ici : "weight" au lieu de "weigth"
+  weight?: "regular" | "medium" | "semibold" | "bold" | "extra-bold";
   className?: string;
   children: React.ReactNode;
 }
 
 export const Typo = ({
   variant = "body-base",
-  component: Component = "div",
+  component = "div",
   theme = "gray-dark",
-  weight = "regular", // Correction ici : "weight" au lieu de "weigth"
+  weight = "regular",
   className,
   children,
 }: Props) => {
@@ -93,10 +93,10 @@ export const Typo = ({
       break;
   }
 
-  // Définir les styles de poids de police en fonction du `weight`
+  // Définir les styles de poids de police
   switch (weight) {
     case "regular":
-      weightStyles = "font-normal"; // Utilisation de la classe Tailwind existante
+      weightStyles = "font-normal";
       break;
     case "medium":
       weightStyles = "font-medium";
@@ -112,7 +112,7 @@ export const Typo = ({
       break;
   }
 
-  // Définir les styles pour le thème (pas encore implémenté dans ce code)
+  // Définir les styles pour le thème
   switch (theme) {
     case "gray-dark":
       colorStyles = "text-gray-dark";
@@ -152,11 +152,22 @@ export const Typo = ({
       break;
   }
 
-  return (
-    <Component
-      className={clsx(variantStyles, colorStyles, weightStyles, className)}
-    >
-      {children}
-    </Component>
-  );
+  const combinedClassName = clsx(variantStyles, colorStyles, weightStyles, className);
+
+  switch (component) {
+    case "h1":
+      return <h1 className={combinedClassName}>{children}</h1>;
+    case "h2":
+      return <h2 className={combinedClassName}>{children}</h2>;
+    case "h3":
+      return <h3 className={combinedClassName}>{children}</h3>;
+    case "h4":
+      return <h4 className={combinedClassName}>{children}</h4>;
+    case "p":
+      return <p className={combinedClassName}>{children}</p>;
+    case "span":
+      return <span className={combinedClassName}>{children}</span>;
+    default:
+      return <div className={combinedClassName}>{children}</div>;
+  }
 };

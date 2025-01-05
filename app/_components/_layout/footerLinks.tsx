@@ -20,7 +20,7 @@ export const footerLinks = [
   {
     id: 2,
     name: "Réservation",
-    href: "/seances",
+    href: "/reservation",
   },
 ];
 
@@ -40,16 +40,16 @@ export const accessLinks = [
 export function FooterLinks() {
   const location = usePathname();
   return (
-    <div className="flex flex-col justify-center items-center gap-x-2">
+    <div className="flex flex-col space-y-3">
       {footerLinks.map((item) => (
         <Link
           href={item.href}
           key={item.id}
           className={cn(
+            "transition-colors duration-200 hover:text-primary",
             location === item.href
-              ? "bg-muted"
-              : "hover:bg-muted hover:bg-opacity-75",
-            "group flex items-center px-2 py-2 font-medium rounded-md"
+              ? "text-primary font-medium"
+              : "text-gray-600"
           )}
         >
           {item.name}
@@ -62,26 +62,18 @@ export function FooterLinks() {
 export function AccessLinks() {
   const location = usePathname();
   return (
-    <div className="flex flex-col justify-center items-center gap-x-2">
+    <div className="flex flex-col space-y-3">
       {accessLinks.map((item) => (
         <Link
           href={item.href}
           key={item.id}
           className={cn(
-            location === item.href
-              ? "bg-muted"
-              : "hover:bg-muted hover:bg-opacity-75",
-            "group flex items-center px-2 py-2 font-medium rounded-md"
+            "flex items-center space-x-2 transition-colors duration-200 hover:text-primary",
+            location === item.href ? "text-primary font-medium" : "text-gray-600"
           )}
         >
-          <div className="flex gap-x-1 items-center">
-            <Typo variant="body-base" component="div">
-              {item.name}
-            </Typo>
-            <div>
-              <Lock className="h-3 w-3 text-muted-foreground" />
-            </div>
-          </div>
+            {item.name}
+          <Lock className="h-4 w-4 text-gray-400" />
         </Link>
       ))}
     </div>

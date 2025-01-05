@@ -14,15 +14,15 @@ interface Equipment {
   name: string;
 }
 
-interface Cinema {
+export interface Cinema {
   id: number;
   name: string;
-  addressId: number; // champ manquant
-  isOpen: boolean | null; // champ manquant
-  managerId: string; // champ manquant
-  description: string; // champ manquant
-  createdAt: Date; // champ manquant
-  updatedAt: Date; // champ manquant
+  addressId: number;
+  isOpen: boolean | null;
+  managerId: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
   Address: {
     id: number;
     street: string;

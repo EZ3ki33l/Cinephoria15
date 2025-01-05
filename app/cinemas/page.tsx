@@ -287,7 +287,7 @@ export default function CinemasPage() {
             {selectedCinema && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
+                <Button variant="icon" className="flex items-center gap-2">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {format(date, "d MMMM yyyy", { locale: fr })}
                   </Button>
@@ -298,6 +298,7 @@ export default function CinemasPage() {
                     selected={date}
                     onSelect={(newDate) => newDate && setDate(newDate)}
                     initialFocus
+                    locale={fr}
                   />
                 </PopoverContent>
               </Popover>
