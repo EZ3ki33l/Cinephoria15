@@ -33,7 +33,7 @@ export function NavbarLinks() {
   return (
     <div className="hidden md:flex justify-center items-center col-span-6 gap-x-1">
       {navbarLinks.map((item) => (
-        <Link href={item.href} key={item.id}>
+        <Link href={item.href} key={item.id} className="text-foreground">
           <HoverButton isActive={location.startsWith(item.href) && item.href !== "/" || location === item.href}>
             {item.name}
           </HoverButton>

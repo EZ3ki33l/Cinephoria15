@@ -14,14 +14,16 @@ import { AnimationHome } from "@/components/ui/animationHome";
 import { MapsCinema } from "./_components/maps/Maps";
 import { HeaderWithCinema } from "@/app/_components/_layout/HeaderWithCinema";
 import { Cinema } from "@prisma/client";
+import { HomePageSkeleton } from "./_components/skeletons";
 
 export default function HomePage() {
   const [cinemas, setCinemas] = useState<Cinema[]>([]);
   const [formattedCinemas, setFormattedCinemas] = useState<MapsCinema[]>([]);
   const [uniqueCities, setUniqueCities] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadCinemas() {
+    const loadData = async () => {
       try {
         const fetchedCinemas = await getAllCinemas();
         setCinemas(fetchedCinemas);
@@ -46,12 +48,16 @@ export default function HomePage() {
           })),
         }));
         setFormattedCinemas(formatted);
-      } catch (error) {
-        console.error("Erreur lors du chargement des cinémas:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    loadCinemas();
+    };
+    loadData();
   }, []);
+
+  if (isLoading) {
+    return <HomePageSkeleton />;
+  }
 
   return (
     <div>

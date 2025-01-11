@@ -12,6 +12,8 @@ body {
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
@@ -47,37 +49,41 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 240 10% 10%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --card: 240 10% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 12%;
+    --popover-foreground: 0 0% 98%;
+    --primary-light: 331 100% 65%;
+    --primary: 338 94% 64%;
+    --primary-dark: 337 94% 49%;
+    --secondary-light: 196 66% 61%;
+    --secondary: 196 96% 43%;
+    --secondary-dark: 196 62% 42%;
+    --gray-light: 0, 0%, 35%;
+    --gray: 60, 0%, 75%;
+    --gray-dark: 0, 0%, 95%;
+    --danger: 0 84.2% 65.2%;
+    --warning: 33, 96%, 58%;
+    --success: 136, 20%, 56%;
+    --border: 240 3.7% 25%;
+    --input: 240 3.7% 25%;
     --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
+    --chart-1: 12 76% 71%;
+    --chart-2: 173 58% 49%;
+    --chart-3: 197 37% 34%;
+    --chart-4: 43 74% 76%;
+    --chart-5: 27 87% 77%;
+    --sidebar-background: 240 10% 12%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 338 94% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-border: 240 3.7% 25%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -88,6 +94,22 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Transitions séparées avec des durées optimisées */
+  *, *::before, *::after {
+    transition: background-color 0.2s ease-in-out,
+                border-color 0.2s ease-in-out,
+                transform 0.2s ease-in-out,
+                box-shadow 0.2s ease-in-out,
+                opacity 0.2s ease-in-out;
+  }
+  /* Transition plus rapide pour le texte */
+  * {
+    transition: color 75ms ease-in-out;
+  }
+  /* Désactiver la transition pour certains éléments spécifiques */
+  .no-transition {
+    transition: none !important;
   }
 }
 

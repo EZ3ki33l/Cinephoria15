@@ -6,12 +6,24 @@ import { MovieHeader } from "./_components/MovieHeader";
 import { MovieInfo } from "./_components/MovieInfo";
 import { prisma } from "@/db/db";
 import { currentUser } from "@clerk/nextjs/server";
+import { Suspense } from "react";
+import { MovieDetailsPageSkeleton } from "@/app/_components/skeletons";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function MoviePage({
+  params,
+}: PageProps) {
+  return (
+    <Suspense fallback={<MovieDetailsPageSkeleton />}>
+      <MovieContent params={params} />
+    </Suspense>
+  );
+}
+
+async function MovieContent({
   params,
 }: PageProps) {
   // Attendre la résolution des paramètres

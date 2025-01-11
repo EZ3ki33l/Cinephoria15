@@ -9,25 +9,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Typo } from "@/app/_components/_layout/typography";
-import { Spinner } from "@/app/_components/_layout/spinner";
 import { getAllCinemas } from "@/app/_components/_maps copy/_components/getAllCinemas";
 import { getShowtimesByScreen } from "./_components/action";
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
-import { ArrowRight } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { ArrowRight, CalendarIcon } from "lucide-react";
 import { Button } from "@/app/_components/_layout/button";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { motion } from "framer-motion";
 import { SeatSelectionModal } from "./_components/SeatSelectionModal";
 import { useAuth } from "@clerk/nextjs";
 import { Cinema as PrismaCinema } from "@prisma/client";
+import { ReservationPageSkeleton } from "@/app/_components/skeletons";
 
 interface Cinema extends PrismaCinema {
   Address: {
@@ -196,14 +195,7 @@ export default function ReservationPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-svh">
-        <Typo variant="h2" theme="primary">
-          Chargement...
-        </Typo>
-        <Spinner size="large" />
-      </div>
-    );
+    return <ReservationPageSkeleton />;
   }
 
   return (

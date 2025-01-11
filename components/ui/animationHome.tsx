@@ -32,24 +32,39 @@ export const AnimationHome = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const raindrops: { x: number; y: number; speed: number; length: number }[] = [];
+    const raindrops: { x: number; y: number; speed: number; length: number; opacity: number }[] = [];
     for (let i = 0; i < 100; i++) {
       raindrops.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         speed: 12 + Math.random() * 8,
         length: 15 + Math.random() * 20,
+        opacity: 0.3 + Math.random() * 0.4,
       });
     }
 
     let animationFrameId: number;
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(100, 100, 100, 0.3)";
-      ctx.lineWidth = 1.4;
 
+      // Détection du thème sombre
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      
       raindrops.forEach((drop) => {
         ctx.beginPath();
+        
+        if (isDarkMode) {
+          // Effet de brillance en mode sombre
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+          ctx.shadowBlur = 3;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${drop.opacity + 0.3})`;
+          ctx.lineWidth = 2;
+        } else {
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = `rgba(100, 100, 100, ${drop.opacity * 0.4})`;
+          ctx.lineWidth = 1.4;
+        }
+
         ctx.moveTo(drop.x, drop.y);
         ctx.lineTo(drop.x, drop.y + drop.length);
         ctx.stroke();
@@ -58,6 +73,10 @@ export const AnimationHome = () => {
         if (drop.y > canvas.height) {
           drop.y = -drop.length;
           drop.x = Math.random() * canvas.width;
+          // Opacité plus élevée en mode sombre
+          drop.opacity = isDarkMode ? 
+            0.5 + Math.random() * 0.5 : // Entre 0.5 et 1.0 en mode sombre
+            0.3 + Math.random() * 0.4;  // Entre 0.3 et 0.7 en mode clair
         }
       });
 
@@ -89,7 +108,7 @@ export const AnimationHome = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-light/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-light/20 to-transparent dark:from-primary/30" />
       </motion.div>
 
       <canvas
@@ -97,7 +116,7 @@ export const AnimationHome = () => {
         className="absolute inset-0 w-full h-full pointer-events-none"
       />
 
-      <div className="absolute inset-0 opacity-[0.03]">
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06]">
         <div className="absolute inset-0" 
           style={{
             backgroundImage: `
@@ -119,7 +138,7 @@ export const AnimationHome = () => {
           >
             <motion.span className="inline-block relative">
               <span 
-                className="font-light block text-2xl sm:text-3xl md:text-4xl mb-2 text-slate-900"
+                className="font-light block text-2xl sm:text-3xl md:text-4xl mb-2 text-foreground"
               >
                 Bienvenue chez
               </span>
@@ -135,13 +154,13 @@ export const AnimationHome = () => {
                   ease: "linear"
                 }}
               >
-                <span className="absolute -inset-0.5 text-red-600/50 blur-[2px] animate-pulse">
+                <span className="absolute -inset-0.5 text-red-600/50 dark:text-red-500/60 blur-[2px] animate-pulse">
                   CINÉPHORIA
                 </span>
-                <span className="absolute -inset-0.5 text-cyan-600/50 blur-[2px] animate-pulse" style={{ animationDelay: "0.1s" }}>
+                <span className="absolute -inset-0.5 text-cyan-600/50 dark:text-cyan-400/60 blur-[2px] animate-pulse" style={{ animationDelay: "0.1s" }}>
                   CINÉPHORIA
                 </span>
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-light to-primary animate-gradient">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-light to-primary dark:from-primary-light dark:via-primary dark:to-primary-light animate-gradient">
                   CINÉPHORIA
                 </span>
               </motion.span>
@@ -149,7 +168,7 @@ export const AnimationHome = () => {
           </motion.h1>
 
           <motion.p
-            className="text-lg sm:text-xl md:text-2xl font-medium text-slate-800 tracking-wide text-center"
+            className="text-lg sm:text-xl md:text-2xl font-medium text-foreground/90 tracking-wide text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
@@ -175,7 +194,7 @@ export const AnimationHome = () => {
           </motion.p>
 
           <motion.div
-            className="absolute inset-0 pointer-events-none mix-blend-overlay"
+            className="absolute inset-0 pointer-events-none mix-blend-overlay dark:mix-blend-soft-light"
             animate={{
               opacity: [0, 0.03, 0],
             }}
@@ -187,14 +206,14 @@ export const AnimationHome = () => {
               delay: 1,
             }}
           >
-            <div className="absolute inset-0 bg-primary-light" />
+            <div className="absolute inset-0 bg-primary-light dark:bg-primary" />
           </motion.div>
         </div>
       </div>
 
       <div className="absolute top-4 left-4 hidden sm:block">
         <motion.div 
-          className="text-xs text-primary/30 font-mono"
+          className="text-xs text-primary/30 dark:text-primary-light/40 font-mono"
           animate={{ opacity: [0.4, 0.9, 0.4] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
@@ -204,7 +223,7 @@ export const AnimationHome = () => {
 
       <div className="absolute bottom-4 right-4 hidden sm:block">
         <motion.div 
-          className="text-xs text-primary/30 font-mono"
+          className="text-xs text-primary/30 dark:text-primary-light/40 font-mono"
           animate={{ opacity: [0.4, 0.9, 0.4] }}
           transition={{ duration: 4, repeat: Infinity }}
         >
@@ -215,19 +234,19 @@ export const AnimationHome = () => {
       {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner) => (
         <div
           key={corner}
-          className={`absolute w-8 h-8 border-primary/20 ${
+          className={`absolute w-8 h-8 border-primary/20 dark:border-primary-light/30 ${
             corner.includes('top') ? 'top-0' : 'bottom-0'
           } ${corner.includes('left') ? 'left-0' : 'right-0'}`}
         >
           <div className={`absolute ${
             corner.includes('left') ? 'border-l' : 'border-r'
           } ${corner.includes('top') ? 'border-t' : 'border-b'
-          } w-full h-full border-primary/20`} />
+          } w-full h-full border-primary/20 dark:border-primary-light/30`} />
         </div>
       ))}
 
       <motion.div
-        className="absolute inset-0 bg-primary/5 mix-blend-overlay pointer-events-none"
+        className="absolute inset-0 bg-primary/5 dark:bg-primary-light/10 mix-blend-overlay dark:mix-blend-soft-light pointer-events-none"
         animate={{
           opacity: [0, 0.05, 0],
         }}

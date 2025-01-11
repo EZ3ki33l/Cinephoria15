@@ -12,14 +12,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-primary text-gray-light shadow hover:bg-primary/60",
-        secondary: "bg-secondary text-gray-light hover:bg-secondary/60",
-        danger: "bg-danger text-gray-light hover:bg-danger/60",
-        success: "bg-success text-gray-light hover:bg-success/60",
-        outline: "border border-gray text-gray hover:bg-gray-light",
-        disabled:
-          "bg-gray-light text-gray-dark border border-gray cursor-not-allowed",
-        icon: "bg-primary text-gray-light rounded-full",
+        primary: "bg-primary text-white shadow hover:bg-primary/60 dark:bg-primary dark:text-white dark:hover:bg-primary/60",
+        secondary: "bg-secondary text-white hover:bg-secondary/60 dark:bg-secondary dark:text-white dark:hover:bg-secondary/60",
+        danger: "bg-danger text-white hover:bg-danger/60 dark:bg-danger dark:text-white dark:hover:bg-danger/60",
+        success: "bg-success text-white hover:bg-success/60 dark:bg-success dark:text-white dark:hover:bg-success/60",
+        outline: "border border-gray text-gray hover:bg-gray-light dark:border-gray-light dark:text-gray-light dark:hover:bg-gray-dark/10",
+        disabled: "bg-gray-light text-gray-dark border border-gray cursor-not-allowed dark:bg-gray-dark dark:text-gray-light dark:border-gray",
+        icon: "bg-primary text-white rounded-full dark:bg-primary dark:text-white",
+        ghost: "hover:bg-gray-light/50 text-foreground dark:text-foreground dark:hover:bg-gray-dark/50",
       },
       size: {
         small: "h-8 px-3 text-xs",

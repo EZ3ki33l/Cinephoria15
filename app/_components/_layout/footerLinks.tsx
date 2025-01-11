@@ -46,10 +46,10 @@ export function FooterLinks() {
           href={item.href}
           key={item.id}
           className={cn(
-            "transition-colors duration-200 hover:text-primary",
+            "transition-colors duration-200 hover:text-primary dark:hover:text-primary-light",
             location === item.href
-              ? "text-primary font-medium"
-              : "text-gray-600"
+              ? "text-primary dark:text-primary-light font-medium"
+              : "text-muted-foreground"
           )}
         >
           {item.name}
@@ -68,12 +68,14 @@ export function AccessLinks() {
           href={item.href}
           key={item.id}
           className={cn(
-            "flex items-center space-x-2 transition-colors duration-200 hover:text-primary",
-            location === item.href ? "text-primary font-medium" : "text-gray-600"
+            "flex items-center space-x-2 transition-colors duration-200 hover:text-primary dark:hover:text-primary-light",
+            location === item.href 
+              ? "text-primary dark:text-primary-light font-medium" 
+              : "text-muted-foreground"
           )}
         >
-            {item.name}
-          <Lock className="h-4 w-4 text-gray-400" />
+          {item.name}
+          <Lock className="h-4 w-4 text-muted-foreground" />
         </Link>
       ))}
     </div>

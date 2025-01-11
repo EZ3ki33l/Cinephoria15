@@ -9,7 +9,7 @@ export async function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t">
+    <footer className="border-t border-border/40">
       <div className="mx-auto">
         <div className="py-12 px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -22,14 +22,14 @@ export async function Footer() {
 
             {/* Colonne Contact */}
             <div className="flex flex-col items-center lg:items-start space-y-6">
-              <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
+              <h2 className="text-lg font-semibold text-foreground">Contact</h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-center lg:justify-start space-x-2">
-                  <Phone className="h-4 w-4 text-primary" />
+                  <Phone className="h-4 w-4 text-primary dark:text-primary-light" />
                   <Typo
                     variant="body-sm"
                     component="p"
-                    className="tracking-wider"
+                    className="tracking-wider text-foreground/90"
                   >
                     09 78 970 970
                   </Typo>
@@ -44,28 +44,28 @@ export async function Footer() {
                 </Link>
               </div>
               <div className="flex flex-col items-center lg:items-start">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                <h2 className="text-lg font-semibold text-foreground mb-6">
                   Réseaux sociaux
                 </h2>
                 <div className="flex justify-center lg:justify-start space-x-4">
                   <Link
                     href="https://facebook.com"
                     target="_blank"
-                    className="text-gray-400 hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary dark:hover:text-primary-light transition-colors"
                   >
                     <Facebook className="h-5 w-5" />
                   </Link>
                   <Link
                     href="https://twitter.com"
                     target="_blank"
-                    className="text-gray-400 hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary dark:hover:text-primary-light transition-colors"
                   >
                     <Twitter className="h-5 w-5" />
                   </Link>
                   <Link
                     href="https://instagram.com"
                     target="_blank"
-                    className="text-gray-400 hover:text-primary transition-colors"
+                    className="text-muted-foreground hover:text-primary dark:hover:text-primary-light transition-colors"
                   >
                     <Instagram className="h-5 w-5" />
                   </Link>
@@ -75,7 +75,7 @@ export async function Footer() {
 
             {/* Colonne Navigation */}
             <div className="flex flex-col items-center lg:items-start">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">
+              <h2 className="text-lg font-semibold text-foreground mb-6">
                 Navigation
               </h2>
               <FooterLinks />
@@ -83,7 +83,7 @@ export async function Footer() {
 
             {/* Colonne Accès */}
             <div className="flex flex-col items-center lg:items-start">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">
+              <h2 className="text-lg font-semibold text-foreground mb-6">
                 Accès Privé
               </h2>
               <AccessLinks />
@@ -92,27 +92,27 @@ export async function Footer() {
         </div>
 
         {/* Barre de copyright */}
-        <div className="border-t border-gray-200 py-6 px-6">
-          <div className="flex flex-col lg:flex-row justify-between items-center text-sm text-gray-500 space-y-4 lg:space-y-0">
+        <div className="border-t border-border/40 py-6 px-6">
+          <div className="flex flex-col lg:flex-row justify-between items-center text-sm text-muted-foreground space-y-4 lg:space-y-0">
             <p className="text-center lg:text-left">
               © {currentYear} Cinephoria. Tous droits réservés.
             </p>
             <div className="flex flex-wrap justify-center gap-4 lg:gap-6">
               <Link
                 href="/mentions-legales"
-                className="hover:text-primary transition-colors whitespace-nowrap"
+                className="hover:text-primary dark:hover:text-primary-light transition-colors whitespace-nowrap"
               >
                 Mentions légales
               </Link>
               <Link
                 href="/politique-confidentialite"
-                className="hover:text-primary transition-colors whitespace-nowrap"
+                className="hover:text-primary dark:hover:text-primary-light transition-colors whitespace-nowrap"
               >
                 Politique de confidentialité
               </Link>
               <Link
                 href="/plan-du-site"
-                className="hover:text-primary transition-colors whitespace-nowrap"
+                className="hover:text-primary dark:hover:text-primary-light transition-colors whitespace-nowrap"
               >
                 Plan du site
               </Link>

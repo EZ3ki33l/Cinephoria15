@@ -8,6 +8,7 @@ import { Container } from "./_components/_layout/container";
 import { Navbar } from "./_components/_layout/navBar";
 import { Footer } from "./_components/_layout/footer";
 import { RouteDetector } from "./_components/_layout/routeDetector";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = localFont({
   src: "/fonts/GeistVF.woff",
@@ -33,25 +34,27 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider localization={frFR} dynamic>
-      <html lang="fr-FR">
+      <html lang="fr-FR" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <Toaster />
-          <RouteDetector
-            publicContent={
-              <>
-                <header className="max-w-7xl mx-auto">
-                  <Navbar />
-                </header>
-                <Container className="flex flex-col min-h-svh relative dark:bg-dot-white/[0.2] bg-dot-black/[0.2]">
-                  <main>{children}</main>
-                </Container>
-                <footer className="max-w-7xl mx-auto">
-                  <Footer />
-                </footer>
-              </>
-            }
-            privateContent={children}
-          />
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <Toaster />
+            <RouteDetector
+              publicContent={
+                <>
+                  <header className="max-w-7xl mx-auto">
+                    <Navbar />
+                  </header>
+                  <Container className="flex flex-col min-h-svh relative dark:bg-dot-white/[0.2] bg-dot-black/[0.2]">
+                    <main>{children}</main>
+                  </Container>
+                  <footer className="max-w-7xl mx-auto">
+                    <Footer />
+                  </footer>
+                </>
+              }
+              privateContent={children}
+            />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

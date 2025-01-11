@@ -203,26 +203,31 @@ export async function createCinemaAction(formData: FormData) {
 }
 
 export async function getAllCinemas() {
-  const cinemas = await prisma.cinema.findMany({
-    include: {
-      Address: true,
-      Manager: {
-        include: {
-          User: true, // Inclut les données de l'utilisateur liées
+  try {
+    const cinemas = await prisma.cinema.findMany({
+      include: {
+        Address: true,
+        Manager: {
+          include: {
+            User: true,
+          },
         },
-      },
-      Screens: {
-        include: {
-          Seats: true,
-          ProjectionType: true,
-          SoundSystemType: true,
+        Screens: {
+          include: {
+            Seats: true,
+            ProjectionType: true,
+            SoundSystemType: true,
+          },
         },
+        Equipment: true,
       },
-      Equipment: true,
-    },
-  });
+    });
 
-  return cinemas;
+    return cinemas;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des cinémas:", error);
+    throw new Error("Impossible de récupérer la liste des cinémas");
+  }
 }
 
 export async function IsOpen(id: number, isOpen: boolean) {

@@ -18,6 +18,7 @@ export async function getUserProfile(userId: string) {
     lastName: user.lastName,
     genreId: user.genreId,
     imageUrl: user.image,
+    createdAt: user.createdAt,
   };
 }
 

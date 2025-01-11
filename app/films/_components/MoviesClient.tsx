@@ -13,6 +13,7 @@ import { CinemaSelector } from "@/app/_components/CinemaSelector";
 import { getUserFavoriteCinema } from "@/app/_actions/user";
 import { Button } from "@/app/_components/_layout/button";
 import { BookingModal } from "./BookingModal";
+import { MoviesPageSkeleton } from "@/app/_components/skeletons";
 
 interface MovieWithGenres extends Movie {
   genres: Genre[];
@@ -31,16 +32,25 @@ export function MoviesClient({ initialMovies, initialGenres, cinemas }: MoviesCl
   const [isNew, setIsNew] = useState(false);
   const [favoriteCinemaId, setFavoriteCinemaId] = useState<number | null>(null);
   const [selectedMovie, setSelectedMovie] = useState<MovieWithGenres | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadFavoriteCinema() {
-      const cinemaId = await getUserFavoriteCinema();
-      if (typeof cinemaId === 'number') {
-        setFavoriteCinemaId(cinemaId);
+      try {
+        const cinemaId = await getUserFavoriteCinema();
+        if (typeof cinemaId === 'number') {
+          setFavoriteCinemaId(cinemaId);
+        }
+      } finally {
+        setIsLoading(false);
       }
     }
     loadFavoriteCinema();
   }, []);
+
+  if (isLoading) {
+    return <MoviesPageSkeleton />;
+  }
 
   const isNewRelease = (releaseDate: Date | null) => {
     if (!releaseDate) return false;

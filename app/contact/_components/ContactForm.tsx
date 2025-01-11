@@ -244,12 +244,16 @@ export function ContactForm({ cinemas }: ContactFormProps) {
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="motif-trigger">
                     <SelectValue placeholder="Sélectionnez un motif" />
                   </SelectTrigger>
                   <SelectContent>
                     {motifs.map((motif) => (
-                      <SelectItem key={motif} value={motif}>
+                      <SelectItem 
+                        key={motif} 
+                        value={motif}
+                        data-testid={`select-item-${motif}`}
+                      >
                         {motif}
                       </SelectItem>
                     ))}

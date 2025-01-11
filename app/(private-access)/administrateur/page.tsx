@@ -1,5 +1,5 @@
 import { Typo } from "@/app/_components/_layout/typography";
-import React from "react";
+import React, { Suspense } from "react";
 import { Dashboard } from "./_components/dashboard";
 import {
   fetchCounts,
@@ -8,8 +8,17 @@ import {
   fetchRevenueByYear,
   getUsersByMonth,
 } from "./_components/actions";
+import { AdminDashboardSkeleton } from "@/app/_components/skeletons";
 
 export default async function page() {
+  return (
+    <Suspense fallback={<AdminDashboardSkeleton />}>
+      <AdminContent />
+    </Suspense>
+  );
+}
+
+async function AdminContent() {
   const counts = await fetchCounts();
   const revenueByMovies = await fetchRevenueByMovies();
   const revenueByCinemas = await fetchRevenueByCinemas();
@@ -22,6 +31,7 @@ export default async function page() {
       revenue,
     })
   );
+
   return (
     <div>
       <div className="h-auto w-full relative flex justify-center">

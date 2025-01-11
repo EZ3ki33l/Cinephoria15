@@ -33,6 +33,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import Image from "next/image";
 import { SeatSelectionModal } from "@/app/reservation/_components/SeatSelectionModal";
+import { CinemasPageSkeleton } from "@/app/_components/skeletons";
 
 export interface Cinema {
   id: number;
@@ -57,7 +58,7 @@ export interface Cinema {
 export default function CinemasPage() {
   const [cinemas, setCinemas] = useState<Cinema[]>([]);
   const [selectedCinema, setSelectedCinema] = useState<Cinema | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [date, setDate] = useState<Date>(new Date());
   const [showtimesByScreen, setShowtimesByScreen] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -68,43 +69,30 @@ export default function CinemasPage() {
 
   useEffect(() => {
     const fetchCinemas = async () => {
+      setIsLoading(true);
       try {
         const fetchedCinemas = await getAllCinemas();
-        const updatedCinemas = fetchedCinemas.map((cinema) => ({
+        const updatedCinemas = fetchedCinemas.map((cinema: any) => ({
           ...cinema,
           screens: Array.isArray(cinema.Screens)
-            ? cinema.Screens.map((screen) => {
-                let seats: { id: number; row: number; column: number }[] = [];
-                if (typeof screen.Seats === "number") {
-                  for (let i = 0; i < screen.Seats; i++) {
-                    seats.push({
-                      id: i + 1,
-                      row: Math.floor(i / 10) + 1,
-                      column: (i % 10) + 1,
-                    });
-                  }
-                } else if (Array.isArray(screen.Seats)) {
-                  seats = screen.Seats;
-                }
-                return {
-                  ...screen,
-                  seats,
-                  projectionType: screen.ProjectionType?.name || "Inconnu",
-                  soundSystemType: screen.SoundSystemType?.name || "Inconnu",
-                };
-              })
+            ? cinema.Screens.map((screen: any) => ({
+                ...screen,
+                seats: Array.isArray(screen.Seats) ? screen.Seats : [],
+                projectionType: screen.ProjectionType?.name || "Inconnu",
+                soundSystemType: screen.SoundSystemType?.name || "Inconnu",
+              }))
             : [],
+          Equipment: cinema.Equipment || []
         }));
         setCinemas(updatedCinemas);
       } catch (error) {
-        console.error("Erreur lors de la récupération des cinémas:", error);
+        console.error("Erreur lors du chargement des cinémas:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-
     fetchCinemas();
-  }, [getAllCinemas]);
+  }, []);
 
   useEffect(() => {
     const fetchShowtimes = async () => {
@@ -160,6 +148,10 @@ export default function CinemasPage() {
     return Array.from(movieMap.values());
   };
 
+  if (isLoading) {
+    return <CinemasPageSkeleton />;
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex flex-col">
@@ -191,7 +183,7 @@ export default function CinemasPage() {
 
         {/* Sélecteur */}
         <div className="mb-5 w-[50%]">
-          {loading ? (
+          {isLoading ? (
             <div>Chargement des cinémas...</div>
           ) : (
             <Select
