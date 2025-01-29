@@ -1,0 +1,326 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstName     String
+  lastName      String
+  userName      String? @unique
+  email         String? @unique
+  image         String?
+  favoriteGenre Genre?  @relation(fields: [genreId], references: [id])
+  favoriteCinema Cinema? @relation("UserFavoriteCinema", fields: [favoriteCinemaId], references: [id])
+  favoriteCinemaId Int?
+
+  Admin   Admin?
+  Manager Manager?
+
+  Bookings Booking[]
+  Tickets  Ticket[]
+  posts    Post[]
+  likes    Like[]
+  genreId  Int?
+  comments Comment[]
+  ratings  Rating[]
+}
+
+model Admin {
+  id String @id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [id], references: [id])
+}
+
+model Manager {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User   User     @relation(fields: [id], references: [id])
+  Cinema Cinema[]
+}
+
+model Cinema {
+  id          Int         @id @default(autoincrement())
+  name        String
+  Address     Address     @relation(fields: [addressId], references: [id])
+  addressId   Int
+  isOpen      Boolean?    @default(false)
+  Screens     Screen[]
+  Manager     Manager     @relation(fields: [managerId], references: [id])
+  managerId   String
+  Equipment   Equipment[] @relation("CinemaEquipment") // Many-to-many implicite
+  description String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  favoriteOfUsers User[] @relation("UserFavoriteCinema")
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  street     String
+  postalCode Int
+  city       String
+  lat        Float
+  lng        Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Cinema Cinema[]
+}
+
+model Screen {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  number    Int
+  cinemaId  Int
+  Cinema    Cinema     @relation(fields: [cinemaId], references: [id], onDelete: Cascade)
+  Seats     Seat[]
+  Showtimes Showtime[]
+
+  price Float @default(19)
+
+  projectionTypeId Int
+  ProjectionType   ProjectionType @relation(fields: [projectionTypeId], references: [id])
+
+  soundSystemTypeId Int
+  SoundSystemType   SoundSystemType @relation(fields: [soundSystemTypeId], references: [id])
+
+  @@unique([cinemaId, number])
+}
+
+model Seat {
+  id         Int     @id @default(autoincrement())
+  row        Int
+  column     Int
+  screenId   Int
+  isHandicap Boolean @default(false)
+  Screen     Screen  @relation(fields: [screenId], references: [id], onDelete: Cascade)
+
+  Booking Booking[]
+}
+
+model Equipment {
+  id      Int      @id @default(autoincrement())
+  name    String
+  Cinemas Cinema[] @relation("CinemaEquipment") // Many-to-many implicite
+}
+
+model ProjectionType {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Screen Screen[]
+}
+
+model SoundSystemType {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Screen Screen[]
+}
+
+model Movie {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  title       String
+  director    String
+  genres      Genre[]    @relation("MovieGenres") // Relation many-to-many
+  duration    Int // Duration in minutes
+  releaseDate DateTime?
+  summary     String
+  trailer     String
+  images      String[]
+  lovedByTeam Boolean?
+  Showtimes   Showtime[]
+  Post        Post[]
+  comments    Comment[]
+  ratings     Rating[]
+}
+
+model News {
+  id           Int      @id @default(autoincrement())
+  title        String
+  category     Category @relation(fields: [categoryId], references: [id])
+  shortContent String
+  content      Json
+  images       String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  categoryId   Int
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+  News News[]
+}
+
+model Showtime {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  startTime DateTime
+  movieId   Int
+  Movie     Movie     @relation(fields: [movieId], references: [id])
+  screenId  Int
+  Screen    Screen    @relation(fields: [screenId], references: [id], onDelete: Cascade)
+  Bookings  Booking[]
+
+  status ShowtimeStatus?
+
+  @@unique([startTime, screenId])
+}
+
+model Discount {
+  id          Int       @id @default(autoincrement())
+  name        String    // Nom de la réduction (ex: "Moins de 12 ans")
+  code        String    @unique // Code unique pour identifier la réduction (ex: "UNDER12")
+  amount      Float     // Montant de la réduction en euros
+  description String?   // Description optionnelle de la réduction
+  startDate   DateTime? // Date de début de validité
+  endDate     DateTime? // Date de fin de validité
+  isRecurrent Boolean   @default(false) // Si la promotion est récurrente
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isActive    Boolean   @default(true)
+  Bookings    Booking[]
+}
+
+model Booking {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  User       User     @relation(fields: [userId], references: [id])
+  showtimeId Int
+  Showtime   Showtime @relation(fields: [showtimeId], references: [id])
+  seatId     Int
+  Seat       Seat     @relation(fields: [seatId], references: [id])
+  pricePaid  Int      // Prix en centimes (19.99€ = 1999)
+  Ticket     Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId   Int
+  discountId Int?     // Champ optionnel pour la réduction
+  discount   Discount? @relation(fields: [discountId], references: [id])
+
+  @@unique([seatId, showtimeId], name: "uniqueSeatShowtime")
+}
+
+model Ticket {
+  id       Int       @id @default(autoincrement())
+  uid      String
+  User     User      @relation(fields: [uid], references: [id])
+  qrCode   String?
+  paymentIntentId  String?   // Ajout du champ pour le paiement
+  Booking  Booking[]
+}
+
+model Genre {
+  id      Int     @id @default(autoincrement())
+  name    String
+  User    User[]
+  movies  Movie[] @relation("MovieGenres") // Relation many-to-many
+  movieId Int?
+}
+
+enum ShowtimeStatus {
+  REPORTE
+  ANNULE
+}
+
+model Post {
+  id       String  @id @default(cuid())
+  content  String
+  parentId String?
+  userId   String
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes Like[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replies Post[] @relation("comments")
+  parent  Post?  @relation("comments", fields: [parentId], references: [id], onDelete: Cascade)
+  Movie   Movie? @relation(fields: [movieId], references: [id])
+  movieId Int?
+}
+
+model Like {
+  id     String @id // L'ID sera composé de userId_postId
+  userId String
+  postId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model TemporarySelection {
+  id         Int      @id @default(autoincrement())
+  showtimeId Int
+  seats      String[]
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([showtimeId])
+  @@index([expiresAt])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movieId   Int
+  userId    String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  rating    Float    // Note de 0.5 à 5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movieId   Int
+  userId    String
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([movieId, userId])
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  nom       String
+  prenom    String
+  email     String
+  motif     String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
